@@ -1,0 +1,56 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Example Ray Marching Scene</h1>
+    </header>
+    <nav id="top-nav">
+      <a id="top-nav-composition">Composition</a>
+      <a id="top-nav-profiles">Profiles</a>
+      <a id="top-nav-final-render">Final Render</a>
+    </nav>
+    <main>
+      <div id="view-composition">
+        <h2>Composition</h2>
+        <canvas id="canvas-composition" width="400" height="400"></canvas>
+      </div>
+      <div id="view-profiles">
+        <div>
+          <h2>2D Profiles</h2>
+          <select name="profiles" id="select-profile"></select>
+        </div>
+        <canvas id="canvas-visualize-sdf-2d" width="400" height="400"></canvas>
+      </div>
+      <div id="view-final-render">
+        <h2>Final Render</h2>
+        <div>
+          <button id="button-render">Start Rendering</button>
+        </div>
+        <canvas id="canvas-final-render" width="400" height="400"></canvas>
+        <div>
+          <table>
+            <tr>
+              <td>Total Processing Time</td>
+              <td id="final-render-total-processing-time">0</td>
+            </tr>
+            <tr>
+              <td>Total Elapsed Time</td>
+              <td id="final-render-total-elapsed-time">0</td>
+            </tr>
+            <tr>
+              <td>Parallelization Ratio</td>
+              <td id="final-render-average-parallelization-ratio">0</td>
+            </tr>
+            <tr>
+              <td>Average Cell Processing Time</td>
+              <td id="final-render-average-cell-processing-time">0</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

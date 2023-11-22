@@ -1,0 +1,19 @@
+{
+  "name": "simplified-ray-march",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.html",
+  "scripts": {
+    "dev": "parcel src/root/index.html",
+    "check": "tsc --noEmit --watch --target ES2016 ./src/root/main.ts",
+    "build": "parcel build dist"
+  },
+  "author": "Nathan Miles",
+  "license": "ISC",
+  "dependencies": {},
+  "devDependencies": {
+    "parcel": "^2.9.3",
+    "parcel-bundler": "^1.12.5",
+    "typescript": "^5.1.6"
+  }
+}
