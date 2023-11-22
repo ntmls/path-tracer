@@ -2,7 +2,6 @@
   "name": "simplified-ray-march",
   "version": "1.0.0",
   "description": "",
-  "main": "index.html",
   "scripts": {
     "dev": "parcel src/root/index.html",
     "check": "tsc --noEmit --watch --target ES2016 ./src/root/main.ts",

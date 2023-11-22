@@ -30,7 +30,7 @@ export class CanvasSensorMultiCore implements Sensor {
   async takePicture(scene: Scene): Promise<void> {
     const width = this.canvas.width;
     const height = this.canvas.height;
-    const cores = 12;
+    const cores = 6;
     const cellSize = 50;
 
     const cells = this.initializeCells(cellSize, width, height);
@@ -80,7 +80,10 @@ export class CanvasSensorMultiCore implements Sensor {
     const promise = new Promise<void>((resolve, reject) => {
       const workers: Worker[] = [];
       for (let i = 0; i < cores; i++) {
-        const worker = new Worker("./SlaveMessageHandler.ts");
+        const worker = new Worker(
+          new URL('SlaveMessageHandler.ts', import.meta.url),
+          {type: 'module'}
+        );
         workers.push(worker);
         worker.onmessage = (e: MessageEvent<CellOutput>) => {
           this._statistics = this._statistics.afterCellRendered(
