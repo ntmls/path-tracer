@@ -5,8 +5,7 @@ import {
 } from "../domain/common/Abstractions";
 import { RgbColor } from "../domain/common/RgbColor";
 import { Scene } from "../domain/common/SceneDefinition/Scene";
-import { PixelSampler } from "./RegionSensor";
-
+import { PixelSampler } from "./nulticore/RegionSensor";
 
 export class StratifiedPixelSampler implements PixelSampler {
   constructor(

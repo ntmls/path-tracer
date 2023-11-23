@@ -1,9 +1,9 @@
 import {
   Sensor,
-} from "../domain/common/Abstractions";
-import { RgbColor } from "../domain/common/RgbColor";
-import { Vector2 } from "../domain/common/Vector2";
-import { Scene } from "../domain/common/SceneDefinition/Scene";
+} from "../../domain/common/Abstractions";
+import { RgbColor } from "../../domain/common/RgbColor";
+import { Vector2 } from "../../domain/common/Vector2";
+import { Scene } from "../../domain/common/SceneDefinition/Scene";
 
 export class RegionSensor implements Sensor {
   private start: Vector2;

@@ -1,11 +1,6 @@
-import {
-  Sensor,
-  Camera,
-  Random,
-  RayTracer,
-} from "../domain/common/Abstractions";
-import { Scene } from "../domain/common/SceneDefinition/Scene";
-import { CellInput, CellOutput as CellOutput } from "./MultiCoreDtos";
+import { Sensor, Camera, RayTracer, Random } from "../../domain/common/Abstractions";
+import { Scene } from "../../domain/common/SceneDefinition/Scene";
+import { CellInput, CellOutput } from "./MultiCoreDtos";
 
 export class CanvasSensorMultiCore implements Sensor {
   private _statistics = MultiCoreStatistics.initialize();
@@ -14,7 +9,7 @@ export class CanvasSensorMultiCore implements Sensor {
     private camera: Camera,
     private rayTracer: RayTracer,
     private random: Random
-  ) {}
+  ) { }
 
   // need to inject via property rather than constructor.
   private _events: MultiCoreEvents;
@@ -160,7 +155,7 @@ class MultiCoreStatistics {
     readonly renderElapsedTime: number,
     readonly cellsProcessed: number,
     readonly totalProcessTime: number
-  ) {}
+  ) { }
 
   get averageCellLProcessTime(): number {
     if (this.cellsProcessed === 0) return 0;

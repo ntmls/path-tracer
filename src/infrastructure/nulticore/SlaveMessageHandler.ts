@@ -1,5 +1,5 @@
-import { Vector2 } from "../domain/common/Vector2";
-import { Composer } from "../root/Composer";
+import { Vector2 } from "../../domain/common/Vector2";
+import { Composer } from "../../root/composer";
 import { CellInput, CellOutput, RgbDto } from "./MultiCoreDtos";
 
 const composer = new Composer();

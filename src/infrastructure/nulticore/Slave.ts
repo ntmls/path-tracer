@@ -1,4 +1,4 @@
-import { Camera, SceneBuilder } from "../domain/common/Abstractions";
+import { Camera, SceneBuilder } from "../../domain/common/Abstractions";
 import { RegionSensor } from "./RegionSensor";
 
 export class Slave {

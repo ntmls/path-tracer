@@ -9,18 +9,15 @@ import { SdfNormalCalculation } from "../domain/common/sdf/SdfNormalCalculation"
 import { NormalsOnlyRayTracer } from "../domain/common/NormalsOnlyRayTracer";
 import { RayMarcher } from "../domain/common/RayMarcher";
 import { CanvasSensor } from "../infrastructure/CanvasSensor";
-import { CanvasSensorMultiCore } from "../infrastructure/CanvasSensorMultiCore";
-import {
-  RegionSensor,
-} from "../infrastructure/RegionSensor";
-import { RandomPixelSampler } from "../infrastructure/RandomPixelSampler";
 import { StratifiedPixelSampler } from "../infrastructure/StratifiedPixelSampler";
-import { Slave } from "../infrastructure/Slave";
 import { UnitSphereSurfaceSampler } from "../domain/common/sampling/UnitSphereSurfaceSampler";
 import { HemisphereSurfaceSampler } from "../domain/common/sampling/HemisphereSurfaceSampler";
 import { SimpleLightFactory } from "../domain/common/SceneDefinition/SimpleLightFactory";
 import { DirectLightPathTracer } from "../domain/common/DirectLightPathTracer";
 import { Film35mmCamera } from "../domain/common/cameras/film35mmCamera";
+import { RegionSensor } from "../infrastructure/nulticore/RegionSensor";
+import { Slave } from "../infrastructure/nulticore/Slave";
+import { CanvasSensorMultiCore } from "../infrastructure/nulticore/CanvasSensorMultiCore";
 import { Vector } from "../domain/common/Vector";
 
 export class Composer {
