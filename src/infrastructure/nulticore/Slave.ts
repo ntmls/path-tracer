@@ -1,10 +1,10 @@
 import { Camera, SceneBuilder } from "../../domain/common/Abstractions";
-import { RegionSensor } from "./RegionSensor";
+import { CellSensor } from "./CellSensor";
 
 export class Slave {
   constructor(
     readonly camera: Camera,
-    readonly sensor: RegionSensor,
+    readonly sensor: CellSensor,
     readonly sceneBuilder: SceneBuilder
   ) {}
 }

@@ -5,7 +5,7 @@ import { RgbColor } from "../../domain/common/RgbColor";
 import { Vector2 } from "../../domain/common/Vector2";
 import { Scene } from "../../domain/common/SceneDefinition/Scene";
 
-export class RegionSensor implements Sensor {
+export class CellSensor implements Sensor {
   private start: Vector2;
   private end: Vector2;
   private _output: RgbColor[] = [];

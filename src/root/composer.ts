@@ -15,11 +15,11 @@ import { HemisphereSurfaceSampler } from "../domain/common/sampling/HemisphereSu
 import { SimpleLightFactory } from "../domain/common/SceneDefinition/SimpleLightFactory";
 import { DirectLightPathTracer } from "../domain/common/DirectLightPathTracer";
 import { Film35mmCamera } from "../domain/common/cameras/film35mmCamera";
-import { RegionSensor } from "../infrastructure/nulticore/RegionSensor";
-import { Slave } from "../infrastructure/nulticore/Slave";
 import { CanvasSensorMultiCore } from "../infrastructure/nulticore/CanvasSensorMultiCore";
 import { Vector } from "../domain/common/Vector";
 import { RandomPixelSampler } from "../infrastructure/RandomPixelSampler";
+import { CellSensor } from "../infrastructure/nulticore/CellSensor";
+import { Slave } from "../infrastructure/nulticore/Slave"
 
 export class Composer {
   private random = new MathRandom();
@@ -97,7 +97,7 @@ export class Composer {
     */
     return new Slave(
       camera,
-      new RegionSensor(pixelSampler),
+      new CellSensor(pixelSampler),
       this.composeBottleSceneBuilder()
     );
   }
