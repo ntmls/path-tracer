@@ -89,12 +89,10 @@ export class CanvasSensorMultiCore implements Sensor {
           this._statistics = this._statistics.afterCellRendered(
             e.data.timeTaken
           );
-          const data = new CellRenderedData();
-          (data.totalProcessingTime = this._statistics.totalProcessTime),
-            (data.totalElapsedTime = this._statistics.renderElapsedTime),
-            (data.averageCellLProcessTime =
-              this._statistics.averageCellLProcessTime);
+
+          const data = this.mapStatiticsToData();
           this._events.cellRendered(data);
+
           this.copyCellDataToImage(e.data);
           inProgress.shift(); // remove from the inprogress stack
           const nextCell = cells.shift();
@@ -120,6 +118,18 @@ export class CanvasSensorMultiCore implements Sensor {
       }
     });
     return promise;
+  }
+
+  private mapStatiticsToData(): CellRenderedData {
+    const data = new CellRenderedData();
+    data.totalProcessingTime = this._statistics.totalProcessTime;
+    data.totalElapsedTime = this._statistics.renderElapsedTime;
+    data.averageCellLProcessTime =
+      this._statistics.averageCellLProcessTime;
+    data.cellsProcessed = this._statistics.cellsProcessed;
+    data.cellsPerSecond = this._statistics.cellsPerSecond;
+    data.cellsPerSecond = this._statistics.cellsPerSecond;
+    return data;
   }
 
   private copyCellDataToImage(data: CellOutput) {
@@ -155,6 +165,8 @@ export class CellRenderedData {
   totalProcessingTime = 0;
   totalElapsedTime = 0;
   averageCellLProcessTime = 0;
+  cellsProcessed = 0;
+  cellsPerSecond = 0;
 }
 
 class MultiCoreStatistics {
@@ -162,7 +174,8 @@ class MultiCoreStatistics {
     readonly renderStartTime: number,
     readonly renderElapsedTime: number,
     readonly cellsProcessed: number,
-    readonly totalProcessTime: number
+    readonly totalProcessTime: number,
+    readonly cellsPerSecond: number
   ) {}
 
   get averageCellLProcessTime(): number {
@@ -171,19 +184,24 @@ class MultiCoreStatistics {
   }
 
   static initialize(): MultiCoreStatistics {
-    return new MultiCoreStatistics(0, 0, 0, 0);
+    return new MultiCoreStatistics(0, 0, 0, 0, 0);
   }
 
   start(): MultiCoreStatistics {
-    return new MultiCoreStatistics(Date.now(), 0, 0, 0);
+    return new MultiCoreStatistics(Date.now(), 0, 0, 0, 0);
   }
 
   afterCellRendered(timeTaken: number): MultiCoreStatistics {
+    const ellapsedTime = Date.now() - this.renderStartTime;
+    const cellsProcessed = this.cellsProcessed + 1;
+    const cellsPerSecond = cellsProcessed / (ellapsedTime / 1000);
+    const totalProcessTime = this.totalProcessTime + timeTaken;
     return new MultiCoreStatistics(
       this.renderStartTime,
-      Date.now() - this.renderStartTime,
-      this.cellsProcessed + 1,
-      this.totalProcessTime + timeTaken
+      ellapsedTime,
+      cellsProcessed,
+      totalProcessTime,
+      cellsPerSecond
     );
   }
 }

@@ -70,6 +70,7 @@ export class HtmlView implements View {
     );
     this.sdfVisualizer2d.visualize(profileViewModel.sdf);
   }
+
   populateProfileSelection(names: string[]): void {
     this.profileSelect.innerHTML = "";
     for (const item of names) {
@@ -78,40 +79,60 @@ export class HtmlView implements View {
       this.profileSelect.appendChild(option);
     }
   }
+
   updateRenderStatistics(data: CellRenderedData): void {
-    const totalProcessingTimeElement = document.getElementById(
+    this.dispplayTotalProcessTime(data);
+    this.displayTotalElapsedTime(data);
+    this.displayAverageProcessingTimeperCell(data);
+    this.displayCellsProcessed(data);
+    this.displayCellsPerSecond(data);
+  }
+
+  private dispplayTotalProcessTime(data: CellRenderedData) {
+    const element = document.getElementById(
       "final-render-total-processing-time"
     );
-    if (totalProcessingTimeElement) {
-      totalProcessingTimeElement.innerHTML =
-        data.totalProcessingTime.toString();
+    if (element) {
+      element.innerHTML = this.formatDurationFromMs(data.totalProcessingTime);
     }
+  }
 
-    const totalElapsedTimeElement = document.getElementById(
-      "final-render-total-elapsed-time"
-    );
-    if (totalElapsedTimeElement) {
-      totalElapsedTimeElement.innerHTML = data.totalElapsedTime.toString();
+  private displayTotalElapsedTime(data: CellRenderedData) {
+    const element = document.getElementById("final-render-total-elapsed-time");
+    if (element) {
+      element.innerHTML = this.formatDurationFromMs(data.totalElapsedTime);
     }
+  }
 
-    const averageProcessingTimePerCellElement = document.getElementById(
+  private displayAverageProcessingTimeperCell(data: CellRenderedData) {
+    const element = document.getElementById(
       "final-render-average-cell-processing-time"
     );
-    if (averageProcessingTimePerCellElement) {
-      averageProcessingTimePerCellElement.innerHTML =
-        data.averageCellLProcessTime.toString();
+    if (element) {
+      element.innerHTML = this.formatDurationFromMs(
+        data.averageCellLProcessTime
+      );
     }
+  }
 
-    const parallelizationRationElement = document.getElementById(
-      "final-render-average-parallelization-ratio"
-    );
-    if (parallelizationRationElement) {
-      let value = 0;
-      if (data.totalElapsedTime > 0) {
-        value = data.totalProcessingTime / data.totalElapsedTime;
-      }
-      parallelizationRationElement.innerHTML = value.toString();
+  private displayCellsProcessed(data: CellRenderedData) {
+    const element = document.getElementById("final-render-cells-processed");
+    if (element) {
+      element.innerHTML = data.cellsProcessed.toString();
     }
+  }
+
+  private displayCellsPerSecond(data: CellRenderedData) {
+    const element = document.getElementById("final-render-cells-per-second");
+    if (element) {
+      element.innerHTML = data.cellsPerSecond.toString();
+    }
+  }
+
+  private formatDurationFromMs(milliseconds: number): string {
+    const seconds = milliseconds / 1000;
+    const rounded = Math.round(seconds * 10) / 10;
+    return rounded.toString();
   }
 
   private assertElementExists(element: HTMLElement | null): HTMLElement {
