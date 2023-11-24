@@ -1,3 +1,4 @@
+import { CellRenderedData } from "../infrastructure/nulticore/CanvasSensorMultiCore";
 import { ProfileViewModel } from "./Presenter";
 
 export interface View {
@@ -9,9 +10,5 @@ export interface View {
   showProfiles(): void;
   visualize2dSdf(profileViewModel: ProfileViewModel): void;
   populateProfileSelection(names: string[]): void;
-  updateRenderStatistics(
-    totalProcessingTime: number,
-    totalElapsedTime: number,
-    averageCellLProcessTime: number
-  ): void;
+  updateRenderStatistics(data: CellRenderedData): void;
 }

@@ -1,8 +1,19 @@
-import { BottleBodyProfileSdf, BottleNeck, BottleCapProfile } from "../domain/BottleSceneBuilder";
-import { SceneBuilder, Sensor, SignedDistanceFunction2d } from "../domain/common/Abstractions";
+import {
+  BottleBodyProfileSdf,
+  BottleNeck,
+  BottleCapProfile,
+} from "../domain/BottleSceneBuilder";
+import {
+  SceneBuilder,
+  Sensor,
+  SignedDistanceFunction2d,
+} from "../domain/common/Abstractions";
 import { Scene } from "../domain/common/SceneDefinition/Scene";
 import { UnionSdf2 } from "../domain/common/sdf/Sdf";
-import { MultiCoreEvents } from "../infrastructure/nulticore/CanvasSensorMultiCore";
+import {
+  CellRenderedData,
+  MultiCoreEvents,
+} from "../infrastructure/nulticore/CanvasSensorMultiCore";
 import { View } from "./View";
 
 export class Presenter implements MultiCoreEvents {
@@ -71,16 +82,8 @@ export class Presenter implements MultiCoreEvents {
     this.view = view;
   }
 
-  cellRendered(
-    totalProcessingTime: number,
-    totalElapsedTime: number,
-    averageCellLProcessTime: number
-  ): void {
-    this.view.updateRenderStatistics(
-      totalProcessingTime,
-      totalElapsedTime,
-      averageCellLProcessTime
-    );
+  cellRendered(data: CellRenderedData): void {
+    this.view.updateRenderStatistics(data);
   }
 }
 

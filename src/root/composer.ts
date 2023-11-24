@@ -19,6 +19,7 @@ import { RegionSensor } from "../infrastructure/nulticore/RegionSensor";
 import { Slave } from "../infrastructure/nulticore/Slave";
 import { CanvasSensorMultiCore } from "../infrastructure/nulticore/CanvasSensorMultiCore";
 import { Vector } from "../domain/common/Vector";
+import { RandomPixelSampler } from "../infrastructure/RandomPixelSampler";
 
 export class Composer {
   private random = new MathRandom();
@@ -80,20 +81,20 @@ export class Composer {
   composeSlave(): Slave {
     const camera = this.createCamera();
     
-    /*
     const pixelSampler = new RandomPixelSampler(
       64,
       this.pathTracer,
       this.random,
       camera
     );
-    */
+    /*
     const pixelSampler = new StratifiedPixelSampler(
       8,
       this.pathTracer,
       this.random,
       camera
     );
+    */
     return new Slave(
       camera,
       new RegionSensor(pixelSampler),

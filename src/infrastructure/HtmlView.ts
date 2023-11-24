@@ -1,6 +1,7 @@
 import { Presenter, ProfileViewModel } from "../application/Presenter";
 import { View } from "../application/View";
 import { SdfVisualizer2d } from "./implementation";
+import { CellRenderedData } from "./nulticore/CanvasSensorMultiCore";
 
 export class HtmlView implements View {
   private linkProfiles: HTMLAnchorElement;
@@ -77,23 +78,20 @@ export class HtmlView implements View {
       this.profileSelect.appendChild(option);
     }
   }
-  updateRenderStatistics(
-    totalProcessingTime: number,
-    totalElapsedTime: number,
-    averageCellLProcessTime: number
-  ): void {
+  updateRenderStatistics(data: CellRenderedData): void {
     const totalProcessingTimeElement = document.getElementById(
       "final-render-total-processing-time"
     );
     if (totalProcessingTimeElement) {
-      totalProcessingTimeElement.innerHTML = totalProcessingTime.toString();
+      totalProcessingTimeElement.innerHTML =
+        data.totalProcessingTime.toString();
     }
 
     const totalElapsedTimeElement = document.getElementById(
       "final-render-total-elapsed-time"
     );
     if (totalElapsedTimeElement) {
-      totalElapsedTimeElement.innerHTML = totalElapsedTime.toString();
+      totalElapsedTimeElement.innerHTML = data.totalElapsedTime.toString();
     }
 
     const averageProcessingTimePerCellElement = document.getElementById(
@@ -101,7 +99,7 @@ export class HtmlView implements View {
     );
     if (averageProcessingTimePerCellElement) {
       averageProcessingTimePerCellElement.innerHTML =
-        averageCellLProcessTime.toString();
+        data.averageCellLProcessTime.toString();
     }
 
     const parallelizationRationElement = document.getElementById(
@@ -109,13 +107,11 @@ export class HtmlView implements View {
     );
     if (parallelizationRationElement) {
       let value = 0;
-      if (totalElapsedTime > 0) {
-        value = totalProcessingTime / totalElapsedTime;
+      if (data.totalElapsedTime > 0) {
+        value = data.totalProcessingTime / data.totalElapsedTime;
       }
-      parallelizationRationElement.innerHTML =
-        value.toString();
+      parallelizationRationElement.innerHTML = value.toString();
     }
-
   }
 
   private assertElementExists(element: HTMLElement | null): HTMLElement {

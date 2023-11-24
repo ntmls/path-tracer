@@ -1,4 +1,9 @@
-import { Sensor, Camera, RayTracer, Random } from "../../domain/common/Abstractions";
+import {
+  Sensor,
+  Camera,
+  RayTracer,
+  Random,
+} from "../../domain/common/Abstractions";
 import { Scene } from "../../domain/common/SceneDefinition/Scene";
 import { CellInput, CellOutput } from "./MultiCoreDtos";
 
@@ -9,7 +14,7 @@ export class CanvasSensorMultiCore implements Sensor {
     private camera: Camera,
     private rayTracer: RayTracer,
     private random: Random
-  ) { }
+  ) {}
 
   // need to inject via property rather than constructor.
   private _events: MultiCoreEvents;
@@ -76,19 +81,20 @@ export class CanvasSensorMultiCore implements Sensor {
       const workers: Worker[] = [];
       for (let i = 0; i < cores; i++) {
         const worker = new Worker(
-          new URL('SlaveMessageHandler.ts', import.meta.url),
-          {type: 'module'}
+          new URL("SlaveMessageHandler.ts", import.meta.url),
+          { type: "module" }
         );
         workers.push(worker);
         worker.onmessage = (e: MessageEvent<CellOutput>) => {
           this._statistics = this._statistics.afterCellRendered(
             e.data.timeTaken
           );
-          this._events.cellRendered(
-            this._statistics.totalProcessTime,
-            this._statistics.renderElapsedTime,
-            this._statistics.averageCellLProcessTime
-          );
+          const data = new CellRenderedData();
+          (data.totalProcessingTime = this._statistics.totalProcessTime),
+            (data.totalElapsedTime = this._statistics.renderElapsedTime),
+            (data.averageCellLProcessTime =
+              this._statistics.averageCellLProcessTime);
+          this._events.cellRendered(data);
           this.copyCellDataToImage(e.data);
           inProgress.shift(); // remove from the inprogress stack
           const nextCell = cells.shift();
@@ -142,11 +148,13 @@ export class CanvasSensorMultiCore implements Sensor {
 }
 
 export interface MultiCoreEvents {
-  cellRendered(
-    totalProcessingTime: number,
-    totalElapsedTime: number,
-    averageCellLProcessTime: number
-  ): void;
+  cellRendered(data: CellRenderedData): void;
+}
+
+export class CellRenderedData {
+  totalProcessingTime = 0;
+  totalElapsedTime = 0;
+  averageCellLProcessTime = 0;
 }
 
 class MultiCoreStatistics {
@@ -155,7 +163,7 @@ class MultiCoreStatistics {
     readonly renderElapsedTime: number,
     readonly cellsProcessed: number,
     readonly totalProcessTime: number
-  ) { }
+  ) {}
 
   get averageCellLProcessTime(): number {
     if (this.cellsProcessed === 0) return 0;
