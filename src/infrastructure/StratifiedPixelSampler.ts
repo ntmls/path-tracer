@@ -12,7 +12,8 @@ export class StratifiedPixelSampler implements PixelSampler {
     readonly samplePattern: number,
     readonly rayTracer: RayTracer,
     readonly random: Random,
-    readonly camera: Camera
+    readonly camera: Camera,
+    readonly clampThreshold
   ) {
     this.subPixelSize = 1 / samplePattern;
     this.samplesPerPixel = samplePattern * samplePattern;
@@ -24,14 +25,15 @@ export class StratifiedPixelSampler implements PixelSampler {
   private sampleWeight: number;
 
   samplePixel(x: number, y: number, scene: Scene): RgbColor {
-    let sum = new RgbColor(0, 0, 0);
+    let sum = RgbColor.black;
     for (let i = 0; i < this.samplePattern; i++) {
+      const tempX = x + i * this.subPixelSize; // move outside thee inner loop for performance
       for (let j = 0; j < this.samplePattern; j++) {
-        const subX = x + i * this.subPixelSize + Math.random() * this.subPixelSize;
+        const subX = tempX + Math.random() * this.subPixelSize;
         const subY = y + j * this.subPixelSize + Math.random() * this.subPixelSize;
         const ray = this.camera.generateRay(subX, subY);
         const color = this.rayTracer.traceRay(ray, scene);
-        sum = sum.add(color);
+        sum = sum.add(color.clampAll(this.clampThreshold));
       }
     }
     const averageColor = sum.scale(this.sampleWeight);

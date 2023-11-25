@@ -36,7 +36,7 @@ export class SdfVisualizer2d {
   private pixelsPerUnit = 100;
   private readonly red = new RgbColor(1, 0, 0);
   private readonly green = new RgbColor(0, 1, 0);
-  private readonly black = new RgbColor(0, 0, 0);
+  private readonly black = RgbColor.black;
   private readonly blue = new RgbColor(0, 0, 1);
   private readonly darkGreen = this.green.mix(this.black, 0.25);
   private readonly darkBlue = this.blue.mix(this.black, 0.25);

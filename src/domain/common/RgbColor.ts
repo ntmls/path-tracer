@@ -1,4 +1,5 @@
 export class RgbColor {
+
   constructor(
     readonly red: number,
     readonly green: number,
@@ -49,6 +50,18 @@ export class RgbColor {
   }
   maxComponent(): number {
     return Math.max(this.red, Math.max(this.green, this.blue));
+  }
+
+  clampAll(maxValue: number): RgbColor {
+    return new RgbColor(
+      this.clampValue(maxValue, this.red),
+      this.clampValue(maxValue, this.green),
+      this.clampValue(maxValue, this.blue)
+    )
+  }
+  private clampValue(maxValue: number, value: number): number {
+    if (value > maxValue) return maxValue;
+    return value;
   }
 
   static readonly black = new RgbColor(0,0,0);

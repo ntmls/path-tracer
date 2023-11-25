@@ -50,7 +50,7 @@ export class CanvasSensor implements Sensor {
   }
 
   private samplePixel(x: number, y: number, scene: Scene) {
-    let sum = new RgbColor(0, 0, 0);
+    let sum = RgbColor.black;
     for (let j = 0; j < this.samplesPerPixel; j++) {
       const ray = this.camera.generateRay(
         this.random.between(x, x + 1),

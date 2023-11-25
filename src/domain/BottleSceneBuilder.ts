@@ -6,7 +6,12 @@ import {
   LightFactory,
 } from "./common/Abstractions";
 import { Polygon } from "./common/Polygon";
-import { RevolutionSdf, UnionSdf2, XPlaneSdf, ZPlaneSdf } from "./common/sdf/Sdf";
+import {
+  RevolutionSdf,
+  UnionSdf2,
+  XPlaneSdf,
+  ZPlaneSdf,
+} from "./common/sdf/Sdf";
 import { Functions } from "./common/Functions";
 import { Material } from "./common/Material";
 import { RgbColor } from "./common/RgbColor";
@@ -17,14 +22,23 @@ export class BottleSceneBuilder implements SceneBuilder {
   constructor(private readonly lightFactor: LightFactory) {}
   build(): Scene {
     const scene = new Scene();
-    scene.backgroundColor = new RgbColor(.17, .23, .24);
+    scene.backgroundColor = new RgbColor(0.17, 0.23, 0.24);
 
-    const bottleMaterial = new Material(new RgbColor(0.9, 0.9, 0.9), RgbColor.black, .25, .6);
-    const bottleCapMaterial = new Material(new RgbColor(0.1, 0.1, 0.1), RgbColor.black, .5);
+    const bottleMaterial = new Material(
+      new RgbColor(0.9, 0.9, 0.9),
+      RgbColor.black,
+      0.25,
+      0.6
+    );
+    const bottleCapMaterial = new Material(
+      new RgbColor(0.1, 0.1, 0.1),
+      RgbColor.black,
+      0.5
+    );
     const backgroundPlaneMaterial = new Material(
       new RgbColor(0.75, 0.75, 0.75),
       RgbColor.black
-);
+    );
 
     // build the back plane
     const backPlaneSdf = new ZPlaneSdf(2);

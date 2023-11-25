@@ -73,7 +73,7 @@ export class DirectLightPathTracer implements RayTracer {
       material
     ).divideScalar(probNewRay);
 
-    // SPECULAR
+    // Pure specular
     if (material.specularAmount > 0) {
       if (this.random.random() < material.specularAmount) {
         if (material.glossyAmount === 0) {
@@ -126,7 +126,7 @@ export class DirectLightPathTracer implements RayTracer {
 
   private calculateDirect(
     scene: Scene,
-    nextPosition: Vector,
+    position: Vector,
     hitInfo: RayMarchResult,
     material: Material
   ): RgbColor {
@@ -135,14 +135,14 @@ export class DirectLightPathTracer implements RayTracer {
     );
     const light = scene.directLights[lightIndex];
     if (light) {
-      const sample = light.sample(nextPosition);
-      const directResult = this.rayMarcher.marchRay(scene.objects, sample.ray);
+      const sample = light.sample(position);
+      const rayResult = this.rayMarcher.marchRay(scene.objects, sample.ray);
       if (
         // if we hit the light
-        directResult.wasHit &&
-        directResult.hitObject === light.visibleObject
+        rayResult.wasHit &&
+        rayResult.hitObject === light.visibleObject
       ) {
-        const directLightColor = directResult.hitObject.material.emission;
+        const directLightColor = rayResult.hitObject.material.emission;
         const directCos = sample.ray.direction.dot(hitInfo.normal);
         const intensity =
           sample.visibleArea / (sample.distance * sample.distance);

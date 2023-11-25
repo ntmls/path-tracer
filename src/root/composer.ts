@@ -82,19 +82,23 @@ export class Composer {
     const camera = this.createCamera();
     
     const pixelSampler = new RandomPixelSampler(
-      64,
+      64, // number of samples per pixel
       this.pathTracer,
       this.random,
-      camera
+      camera, 
+      7.5 // clamp threshold
     );
-    /*
+  
+   /*
     const pixelSampler = new StratifiedPixelSampler(
-      8,
+      8, // sub sample pattern8x8 = 64 subsamples
       this.pathTracer,
       this.random,
-      camera
+      camera, 
+      7.5 // clamp threshold
     );
     */
+
     return new Slave(
       camera,
       new CellSensor(pixelSampler),

@@ -20,28 +20,30 @@ export class Film35mmCamera implements Camera {
     private origin: Vector,
     private lookAt: Vector,
     private up: Vector,
-    private readonly megaPixels: number, 
+    private readonly megaPixels: number,
     private readonly focalLengthMillimeters: number
   ) {
     this.filmSizeMillimeters = new Vector2(36, 24);
     this.filmSizeInches = this.filmSizeMillimeters.scale(1 / 25.4);
-    this.focalLengthInches = this.focalLengthMillimeters * (1 /  25.4); 
+    this.focalLengthInches = this.focalLengthMillimeters * (1 / 25.4);
     this.calcSensor(megaPixels);
     this.cameraBasis = OrthoBasis.fromLookAt(origin, lookAt, up);
-    this.sensorCenter = this.pixels.scale(.5); 
+    this.sensorCenter = this.pixels.scale(0.5);
     this.sensorScale = 1 / this.pixelsPerInch;
   }
 
   generateRay(x: number, y: number): Ray {
-    const input = new Vector2(x, y);
-    const sensorPosition = input.minus(this.sensorCenter).scale(this.sensorScale).to3d(this.focalLengthInches);
+    const sensorPosition = new Vector(
+      (x - this.sensorCenter.x) * this.sensorScale, 
+      (y - this.sensorCenter.y) * this.sensorScale, 
+      this.focalLengthInches);
     const direction = this.cameraBasis.project(sensorPosition).normalize();
     return new Ray(this.origin, direction);
   }
 
   initializeSensor(sensor: Sensor): void {
     if (!sensor) throw new Error("Expected 'sensor' to be defined.");
-    sensor.setSize(this.pixels.x, this.pixels.y); 
+    sensor.setSize(this.pixels.x, this.pixels.y);
     this.sensor = sensor;
   }
 
@@ -76,7 +78,4 @@ export class Film35mmCamera implements Camera {
     this.pixelsPerMillimeter = this.pixels.x / this.filmSizeMillimeters.x;
     this.pixelsPerInch = this.pixelsPerMillimeter * 25.4;
   }
-
 }
-
-

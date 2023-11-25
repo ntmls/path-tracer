@@ -1,7 +1,6 @@
 import { Functions } from "./Functions";
 import { Vector2 } from "./Vector2";
 
-
 export class Polygon {
   private points: Vector2[] = [];
   private segments: PolySegment[] = [];

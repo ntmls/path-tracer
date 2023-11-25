@@ -18,7 +18,7 @@ export class NormalsOnlyRayTracer implements RayTracer {
       );
       return color;
     } else {
-      return new RgbColor(0, 0, 0);
+      return RgbColor.black;
     }
   }
 

@@ -49,7 +49,7 @@ export class NaivePathTracer implements RayTracer {
     // back up a little
     const nextPosition = hitInfo.hitAt.add(ray.direction.scale(-0.01));
 
-    // let directLight = new RgbColor(0, 0, 0);
+    // let directLight = RgbColor.black;
 
     /*
     if (material.reflect) {
@@ -105,14 +105,14 @@ export class NaivePathTracer implements RayTracer {
         // TODO: add isEmissive to avoid null color.
         directLightColor = directResult.hitObject.material.emission;
       } else {
-        directLightColor = new RgbColor(0, 0, 0);
+        directLightColor = RgbColor.black;
       }
       const directCos = sample.ray.direction.dot(hitInfo.normal);
       const intensity =
         sample.visibleArea / (sample.distance * sample.distance);
       direct = directLightColor.scale(directCos * intensity);
     } else {
-      direct = new RgbColor(0, 0, 0);
+      direct = RgbColor.black;
     }
     return direct;
   }

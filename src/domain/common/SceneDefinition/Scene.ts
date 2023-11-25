@@ -5,7 +5,7 @@ import { RgbColor } from "../RgbColor";
 export class Scene {
   private _objects: SceneObject[] = [];
   private _directLights: LightObject[] = [];
-  backgroundColor: RgbColor = new RgbColor(0, 0, 0);
+  backgroundColor = RgbColor.black;;
 
   get objects(): readonly SceneObject[] {
     return this._objects;
