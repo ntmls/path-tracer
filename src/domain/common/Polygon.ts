@@ -51,12 +51,7 @@ export class Polygon {
     let intersectEven = true;
     for (let i = 0; i < this._pointCount; i++) {
       const segment = this.segmentAt(i);
-      const dps = position.minus(segment.start);
-      let time = dps.dot(segment.vectorNormal) / segment.length;
-      time = Functions.clamp(time, 0, 1);
-      const pointAtTime = segment.vector.scale(time).add(segment.start);
-      const vectToPosition = position.minus(pointAtTime);
-      const distanceSquared = vectToPosition.dot(vectToPosition);
+      const distanceSquared = segment.distanceSquared(position);
       if (first) {
         minSquared = distanceSquared;
         first = false;
@@ -71,10 +66,9 @@ export class Polygon {
       }
       if (Functions.between(modPosition.y, segment.start.y, segment.end.y)) {
         const dy = modPosition.y - segment.start.y;
-        const t = dy / segment.vector.y;
-        let intersect = segment.vector.scale(t);
-        intersect = segment.start.add(intersect);
-        if (intersect.x > modPosition.x) {
+        const t = dy * segment.inverseVectorY // / segment.vector.y;
+        const xIntersect = segment.start.x + segment.vector.x * t;
+        if (xIntersect > modPosition.x) {
           intersectEven = !intersectEven;
         }
       }
@@ -88,10 +82,13 @@ export class Polygon {
   }
 }
 
-class PolySegment {
+export class PolySegment {
   readonly vector: Vector2;
   readonly vectorNormal: Vector2;
   readonly length: number;
+  readonly inverseLength: number;
+  readonly inverseVectorY: number;
+
   constructor(
     readonly previous: Vector2,
     readonly start: Vector2,
@@ -100,5 +97,33 @@ class PolySegment {
     this.vector = this.end.minus(this.start);
     this.vectorNormal = this.vector.normalize();
     this.length = this.vector.magnitude;
+    if (this.length > 0) {
+      this.inverseLength = 1 / this.length;
+    } else {
+      this.inverseLength = 0;
+    }
+    if (this.vector.y > 0) {
+      this.inverseVectorY = 1 / this.vector.y;
+    } else {
+      this.inverseVectorY = 0;
+    }
+  }
+
+  distanceSquared(position: Vector2): number {
+    const time = this.getTime(position);
+    const px = position.x - (this.vector.x * time + this.start.x);
+    const py = position.y - (this.vector.y * time + this.start.y);
+    return px * px + py * py;
+  }
+
+  private getTime(position: Vector2) {
+    const dx = position.x - this.start.x;
+    const dy = position.y - this.start.y;
+    const time =
+      (dx * this.vectorNormal.x + dy * this.vectorNormal.y) *
+      this.inverseLength;
+    if (time < 0) return 0;
+    if (time > 1) return 1;
+    return time;
   }
 }
