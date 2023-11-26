@@ -18,8 +18,10 @@ export class RayMarcher {
     const SURFACE_DISTANCE = 0.01;
     const MAX_DISTANCE = 2000;
     let totalDistance = 0;
-    for (let i = 0; i < this.maxSteps; i++) {
-      const closest = this.minimumDistance(objects, ray.position);
+    const objectCount = objects.length;
+    let i = 0;
+    while (i < this.maxSteps) {
+      const closest = this.minimumDistance(objects, objectCount, ray.position);
       totalDistance += closest.distance;
       if (totalDistance < 0) {
         throw new Error("Expected positive distance.");
@@ -48,29 +50,30 @@ export class RayMarcher {
       } else {
         ray = ray.move(closest.distance);
       }
+      i++;
     }
     return new RayMarchResult(false, this.emptyVector, this.emptyVector, null);
   }
 
   private minimumDistance(
     objects: readonly SceneObject[],
+    objectCount: number,
     position: Vector
   ): ClosestObject {
     let minDistance = 0;
     let minObject!: SceneObject;
-    let first = true;
-    for (const obj of objects) {
-      const distance = Math.max(obj.sdf.distance(position), 0); // do not allow negatives
-      if (first) {
+    let distance = Math.max(objects[0].sdf.distance(position), 0); // do not allow negatives
+    minDistance = distance;
+    minObject = objects[0];
+    let i = 1;
+    while (i < objectCount) {
+      const obj = objects[i];
+      distance = Math.max(obj.sdf.distance(position), 0); // do not allow negatives
+      if (distance < minDistance) {
         minDistance = distance;
         minObject = obj;
-        first = false;
-      } else {
-        if (distance < minDistance) {
-          minDistance = distance;
-          minObject = obj;
-        }
       }
+      i++;
     }
     return new ClosestObject(minDistance, minObject);
   }

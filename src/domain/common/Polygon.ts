@@ -46,32 +46,20 @@ export class Polygon {
   }
 
   distance(position: Vector2): number {
-    let minSquared = 0;
-    let first = true;
     let intersectEven = true;
-    for (let i = 0; i < this._pointCount; i++) {
-      const segment = this.segmentAt(i);
-      const distanceSquared = segment.distanceSquared(position);
-      if (first) {
+    let segment = this.segmentAt(0);
+    let distanceSquared = segment.distanceSquared(position);
+    let minSquared = distanceSquared;
+    intersectEven = this.isIntersecionsEven(position, segment, intersectEven);
+    let i = 1;
+    while (i < this._pointCount) {
+      segment = this.segmentAt(i);
+      distanceSquared = segment.distanceSquared(position);
+      if (distanceSquared < minSquared) {
         minSquared = distanceSquared;
-        first = false;
-      } else {
-        if (distanceSquared < minSquared) {
-          minSquared = distanceSquared;
-        }
       }
-      let modPosition = position;
-      if (position.y === segment.start.y || position.y === segment.end.y) {
-        modPosition = new Vector2(position.x, position.y + 0.00001);
-      }
-      if (Functions.between(modPosition.y, segment.start.y, segment.end.y)) {
-        const dy = modPosition.y - segment.start.y;
-        const t = dy * segment.inverseVectorY // / segment.vector.y;
-        const xIntersect = segment.start.x + segment.vector.x * t;
-        if (xIntersect > modPosition.x) {
-          intersectEven = !intersectEven;
-        }
-      }
+      intersectEven = this.isIntersecionsEven(position, segment, intersectEven);
+      i++;
     }
     const dist = Math.sqrt(minSquared);
     if (intersectEven) {
@@ -79,6 +67,26 @@ export class Polygon {
     } else {
       return -dist;
     }
+  }
+
+  private isIntersecionsEven(
+    position: Vector2,
+    segment: PolySegment,
+    intersectEven: boolean
+  ) {
+    let modPosition = position;
+    if (position.y === segment.start.y || position.y === segment.end.y) {
+      modPosition = new Vector2(position.x, position.y + 0.00001);
+    }
+    if (Functions.between(modPosition.y, segment.start.y, segment.end.y)) {
+      const dy = modPosition.y - segment.start.y;
+      const t = dy * segment.inverseVectorY; // / segment.vector.y;
+      const xIntersect = segment.start.x + segment.vector.x * t;
+      if (xIntersect > modPosition.x) {
+        intersectEven = !intersectEven;
+      }
+    }
+    return intersectEven;
   }
 }
 
