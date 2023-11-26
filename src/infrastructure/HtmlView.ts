@@ -1,4 +1,8 @@
-import { Presenter, ProfileViewModel } from "../application/Presenter";
+import {
+  Presenter,
+  ProfileViewModel,
+  sceneObjectsViewModel,
+} from "../application/Presenter";
 import { View } from "../application/View";
 import { SdfVisualizer2d } from "./implementation";
 import { CellRenderedData } from "./nulticore/CanvasSensorMultiCore";
@@ -86,6 +90,29 @@ export class HtmlView implements View {
     this.displayAverageProcessingTimeperCell(data);
     this.displayCellsProcessed(data);
     this.displayCellsPerSecond(data);
+  }
+
+  displaySceneObjects(viewModel: sceneObjectsViewModel): void {
+    const tableElement = document.getElementById(
+      "view-composition-scene-objects"
+    ) as HTMLTableElement;
+    const tbody = tableElement.tBodies[0];
+
+    // delete all the rows
+    for (let i = tbody.rows.length - 1; i >= 0; i--) {
+      tbody.deleteRow(i);
+    }
+
+    // build the table rows form the view model
+    for (const item of viewModel.items) {
+      const row = tbody.insertRow();
+      let cell = row.insertCell();
+      cell.innerHTML = item.name;
+
+      cell = row.insertCell();
+      cell.innerHTML = item.type;
+      
+    }
   }
 
   private dispplayTotalProcessTime(data: CellRenderedData) {

@@ -59,6 +59,8 @@ export class Presenter implements MultiCoreEvents {
     this.view.hideFinalRender();
     this.compositionSensor.takePicture(this.scene);
     this.view.showComposition();
+    const sceneViewObjectsModel = this.buildSceneViewModel(this.scene);
+    this.view.displaySceneObjects(sceneViewObjectsModel);
   }
 
   displayFinalRender(): void {
@@ -85,6 +87,20 @@ export class Presenter implements MultiCoreEvents {
   cellRendered(data: CellRenderedData): void {
     this.view.updateRenderStatistics(data);
   }
+
+  private buildSceneViewModel(scene: Scene): sceneObjectsViewModel {
+    const viewModel = new sceneObjectsViewModel();
+    const len = scene.objects.length;
+    for (const obj of scene.objects) {
+      const item = new sceneObjectViewModel();
+      item.index = obj.index;
+      item.name = obj.name;
+      item.type = obj.sdf.constructor.name;
+      viewModel.items.push(item);
+    }
+    return viewModel;
+  }
+
 }
 
 export class ProfileViewModel {
@@ -95,4 +111,14 @@ export class ProfileViewModel {
     readonly yOffset: number,
     readonly pixelsPerUnit: number
   ) {}
+}
+
+export class sceneObjectsViewModel {
+  items: sceneObjectViewModel[] = [];
+}
+
+export class sceneObjectViewModel {
+  index = 0;
+  type = '';
+  name = '';
 }

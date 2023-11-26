@@ -6,23 +6,17 @@ import {
   LightFactory,
 } from "./common/Abstractions";
 import { Polygon } from "./common/Polygon";
-import {
-  RevolutionSdf,
-  UnionSdf2,
-  XPlaneSdf,
-  ZPlaneSdf,
-} from "./common/sdf/Sdf";
+import { RevolutionSdf, UnionSdf2, ZPlaneSdf } from "./common/sdf/Sdf";
 import { Functions } from "./common/Functions";
 import { Material } from "./common/Material";
 import { RgbColor } from "./common/RgbColor";
 import { Scene } from "./common/SceneDefinition/Scene";
-import { SceneObject } from "./common/SceneDefinition/SceneObject";
 
 export class BottleSceneBuilder implements SceneBuilder {
-  constructor(private readonly lightFactor: LightFactory) {}
+  constructor(private readonly lightFactory: LightFactory) {}
   build(): Scene {
-    const scene = new Scene();
-    scene.backgroundColor = new RgbColor(0.17, 0.23, 0.24);
+    const backgroundColor = new RgbColor(0.17, 0.23, 0.24);
+    const scene = new Scene(this.lightFactory, backgroundColor);
 
     const bottleMaterial = new Material(
       new RgbColor(0.9, 0.9, 0.9),
@@ -42,30 +36,33 @@ export class BottleSceneBuilder implements SceneBuilder {
 
     // build the back plane
     const backPlaneSdf = new ZPlaneSdf(2);
-    scene.addObject(new SceneObject(backPlaneSdf, backgroundPlaneMaterial));
+    scene.addObject("Back Wall", backPlaneSdf, backgroundPlaneMaterial);
 
     // build the bottle body
     let bottleProfile: SignedDistanceFunction2d = new BottleBodyProfileSdf();
     let bottleNeck: SignedDistanceFunction2d = new BottleNeck();
     bottleProfile = new UnionSdf2(bottleProfile, bottleNeck);
     scene.addObject(
-      new SceneObject(new RevolutionSdf(bottleProfile), bottleMaterial)
+      "Bottle Body",
+      new RevolutionSdf(bottleProfile),
+      bottleMaterial
     );
 
     // bottle cap
     let bottleCapProfile = new BottleCapProfile();
     let bottleCap = new RevolutionSdf(bottleCapProfile);
-    scene.addObject(new SceneObject(bottleCap, bottleCapMaterial));
+    scene.addObject("Bottle Cap", bottleCap, bottleCapMaterial);
 
     // spherical light
-    const sphereLight = this.lightFactor.sphereLight(
-      new Vector(-40, 10.0, -80),
-      10,
-      new RgbColor(55, 53, 48)
+    const lightPosition = new Vector(-40, 10.0, -80);
+    const lightRadius = 10;
+    const lightColor = new RgbColor(55, 53, 48);
+    scene.addSphericalLight(
+      "Sphirical Light",
+      lightPosition,
+      lightRadius,
+      lightColor
     );
-    scene.addDirectLight(sphereLight);
-    scene.addObject(sphereLight.visibleObject);
-
     return scene;
   }
 }

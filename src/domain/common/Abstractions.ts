@@ -53,7 +53,12 @@ export interface LightObject extends DirectLight {
 }
 
 export interface LightFactory {
-  sphereLight(position: Vector, radius: number, color: RgbColor): LightObject;
+  sphereLight(
+    position: Vector,
+    radius: number,
+    color: RgbColor,
+    visibleObject: SceneObject
+  ): LightObject;
 }
 
 export enum Units {

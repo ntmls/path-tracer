@@ -12,12 +12,18 @@ export class SimpleLightFactory implements LightFactory {
     private readonly unitSphereSurfaceSampler: UnitSphereSurfaceSampler
   ) {}
 
-  sphereLight(position: Vector, radius: number, color: RgbColor): LightObject {
+  sphereLight(
+    position: Vector,
+    radius: number,
+    color: RgbColor,
+    visibleObject: SceneObject
+  ): LightObject {
     return new SphereLight(
       this.unitSphereSurfaceSampler,
       position,
       radius,
-      color
+      color,
+      visibleObject
     );
   }
 }
@@ -30,11 +36,10 @@ class SphereLight implements LightObject {
     private sphereSampler: UnitSphereSurfaceSampler,
     private readonly position: Vector,
     private readonly radius: number,
-    private readonly color: RgbColor
+    private readonly color: RgbColor,
+    visibleObject: SceneObject
   ) {
-    const sdf = new SphereSdf(this.position, this.radius);
-    const material = new Material(this.color, this.color);
-    this._visitableObject = new SceneObject(sdf, material);
+    this._visitableObject = visibleObject;
     this._visibleArea = radius * radius * Math.PI;
   }
   sample(from: Vector): LightSample {
@@ -49,6 +54,7 @@ class SphereLight implements LightObject {
       this._visibleArea
     );
   }
+  
   get visibleObject(): SceneObject {
     return this._visitableObject;
   }
