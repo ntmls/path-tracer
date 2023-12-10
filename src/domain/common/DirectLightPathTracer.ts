@@ -31,7 +31,8 @@ export class DirectLightPathTracer implements RayTracer {
     containedSpecular: boolean,
     priorGlossAmount: number = 0
   ): RgbColor {
-    const hitInfo = this.rayMarcher.marchRay(scene.objects, ray);
+    const objectsInBounds = scene.objects.filter((x) => x.bounds.inBounds(ray));
+    const hitInfo = this.rayMarcher.marchRay(objectsInBounds, ray);
     if (!(hitInfo.wasHit && hitInfo.hitObject)) {
       return scene.backgroundColor;
     }
@@ -80,7 +81,13 @@ export class DirectLightPathTracer implements RayTracer {
           const reflectDirection = ray.direction.reflect(hitInfo.normal);
           const reflectRay = new Ray(nextPosition, reflectDirection);
           const brdf = new RgbColor(1, 1, 1).divideScalar(Math.PI);
-          const reflected = this.tracePath(reflectRay, scene, depth + 1, true, 0)
+          const reflected = this.tracePath(
+            reflectRay,
+            scene,
+            depth + 1,
+            true,
+            0
+          )
             .multiply(brdf)
             .divideScalar(probNewRay);
           return reflected.add(direct);
@@ -102,7 +109,13 @@ export class DirectLightPathTracer implements RayTracer {
             1
           );
           const blendedCos = Functions.lerp(material.glossyAmount, cos, 1);
-          const reflected = this.tracePath(reflectRay, scene, depth + 1, true, material.glossyAmount)
+          const reflected = this.tracePath(
+            reflectRay,
+            scene,
+            depth + 1,
+            true,
+            material.glossyAmount
+          )
             .multiply(brdf)
             .scale(blendedCos)
             .divideScalar(pdf * probNewRay);

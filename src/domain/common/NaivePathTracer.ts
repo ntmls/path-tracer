@@ -28,7 +28,8 @@ export class NaivePathTracer implements RayTracer {
     depth: number,
     wasSpecular: boolean
   ): RgbColor {
-    const hitInfo = this.rayMarcher.marchRay(scene.objects, ray);
+    const objectsInBounds = scene.objects.filter((x) => x.bounds.inBounds(ray));
+    const hitInfo = this.rayMarcher.marchRay(objectsInBounds, ray);
     if (!(hitInfo.wasHit && hitInfo.hitObject)) {
       return scene.backgroundColor;
     }
