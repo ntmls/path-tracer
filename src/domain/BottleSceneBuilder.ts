@@ -42,6 +42,7 @@ export class BottleSceneBuilder implements SceneBuilder {
     // build the bottle body
     let bottleProfile: SignedDistanceFunction2d = new BottleBodyProfileSdf();
     let bottleNeck: SignedDistanceFunction2d = new BottleNeck();
+    const bottleBodyBounds = new SphereBounds(new Vector(0, 2.5, 0), 2.7)
     bottleProfile = new UnionSdf2(bottleProfile, bottleNeck);
     scene.addObject(
       "Bottle Body",
@@ -52,7 +53,7 @@ export class BottleSceneBuilder implements SceneBuilder {
     // bottle cap
     let bottleCapProfile = new BottleCapProfile();
     let bottleCap = new RevolutionSdf(bottleCapProfile);
-    const bounds = new SphereBounds(new Vector(0, 0, 5.4), 1.1);
+    const bounds = new SphereBounds(new Vector(0, 5.4, 0), 1);
     scene.addObject("Bottle Cap", bottleCap, bottleCapMaterial, bounds);
 
     // spherical light

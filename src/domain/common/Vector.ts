@@ -27,6 +27,12 @@ export class Vector {
     const dz = this.z - other.z;
     return Math.sqrt(dx * dx + dy * dy + dz * dz);
   }
+  distanceSquaredFrom(other: Vector): number {
+    const dx = this.x - other.x;
+    const dy = this.y - other.y;
+    const dz = this.z - other.z;
+    return dx * dx + dy * dy + dz * dz;
+  }
   minus(other: Vector): Vector {
     return new Vector(this.x - other.x, this.y - other.y, this.z - other.z);
   }

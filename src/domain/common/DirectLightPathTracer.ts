@@ -6,6 +6,7 @@ import { Ray } from "./Ray";
 import { RayMarcher } from "./RayMarcher";
 import { RgbColor } from "./RgbColor";
 import { Scene } from "./SceneDefinition/Scene";
+import { SceneObject } from "./SceneDefinition/SceneObject";
 import { Vector } from "./Vector";
 import { HemisphereSurfaceSampler } from "./sampling/HemisphereSurfaceSampler";
 
@@ -149,7 +150,8 @@ export class DirectLightPathTracer implements RayTracer {
     const light = scene.directLights[lightIndex];
     if (light) {
       const sample = light.sample(position);
-      const rayResult = this.rayMarcher.marchRay(scene.objects, sample.ray);
+      const objectsInBounds = scene.objects.filter((x) => x.bounds.inBounds(sample.ray));
+      const rayResult = this.rayMarcher.marchRay(objectsInBounds, sample.ray);
       if (
         // if we hit the light
         rayResult.wasHit &&

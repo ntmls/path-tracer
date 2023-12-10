@@ -46,8 +46,9 @@ export class Scene {
   ) {
     const sdf = new SphereSdf(position, radius);
     const material = new Material(color, color);
+    const bounds = new SphereBounds(position, radius);
     material.isDirectlySampledLight = isDirectLightSource;
-    const visibleObject = this.addObject(name, sdf, material);
+    const visibleObject = this.addObject(name, sdf, material, bounds);
     if (isDirectLightSource) {
       const light = this.lightFactory.sphereLight(
         position,

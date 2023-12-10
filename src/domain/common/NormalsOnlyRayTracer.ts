@@ -10,6 +10,7 @@ export class NormalsOnlyRayTracer implements RayTracer {
 
   traceRay(ray: Ray, scene: Scene): RgbColor {
     const objectsInBounds = scene.objects.filter((x) => x.bounds.inBounds(ray));
+    // if( objectsInBounds.length < 4) return new RgbColor(1,0,0); debug bounds
     const result = this.rayMarcher.marchRay(objectsInBounds, ray);
     if (result.wasHit) {
       const color = new RgbColor(

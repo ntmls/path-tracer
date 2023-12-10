@@ -21,7 +21,7 @@ export class RayMarcher {
     const objectCount = objects.length;
     let i = 0;
     while (i < this.maxSteps) {
-      const closest = this.minimumDistance(objects, objectCount, ray.position);
+      const closest = this.minimumDistance(objects, objectCount, ray.origin);
       totalDistance += closest.distance;
       if (totalDistance < 0) {
         throw new Error("Expected positive distance.");
@@ -31,11 +31,11 @@ export class RayMarcher {
         // hit
         const normal = this.normalCalculator.calculate(
           closest.closestObject.sdf,
-          ray.position
+          ray.origin
         );
         return new RayMarchResult(
           true,
-          ray.position,
+          ray.origin,
           normal,
           closest.closestObject
         );
@@ -48,7 +48,7 @@ export class RayMarcher {
           null
         );
       } else {
-        ray = ray.move(closest.distance);
+        ray = ray.shift(closest.distance);
       }
       i++;
     }
