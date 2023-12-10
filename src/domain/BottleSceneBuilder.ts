@@ -11,6 +11,7 @@ import { Functions } from "./common/Functions";
 import { Material } from "./common/Material";
 import { RgbColor } from "./common/RgbColor";
 import { Scene } from "./common/SceneDefinition/Scene";
+import { SphereBounds } from "./common/SceneDefinition/SceneObject";
 
 export class BottleSceneBuilder implements SceneBuilder {
   constructor(private readonly lightFactory: LightFactory) {}
@@ -51,7 +52,8 @@ export class BottleSceneBuilder implements SceneBuilder {
     // bottle cap
     let bottleCapProfile = new BottleCapProfile();
     let bottleCap = new RevolutionSdf(bottleCapProfile);
-    scene.addObject("Bottle Cap", bottleCap, bottleCapMaterial);
+    const bounds = new SphereBounds(new Vector(0, 0, 5.4), 1.1);
+    scene.addObject("Bottle Cap", bottleCap, bottleCapMaterial, bounds);
 
     // spherical light
     const lightPosition = new Vector(-40, 10.0, -80);

@@ -1,4 +1,4 @@
-import { SceneObject } from "./SceneObject";
+import { Bounds, SceneObject, SphereBounds, Unbounded } from "./SceneObject";
 import {
   DirectLight,
   LightFactory,
@@ -28,10 +28,11 @@ export class Scene {
   addObject(
     name: string,
     sdf: SignedDistanceFunction,
-    material: Material
+    material: Material, 
+    bounds: Bounds = new Unbounded()
   ): SceneObject {
     const index = this.objects.length;
-    const obj = new SceneObject(index, name, sdf, material);
+    const obj = new SceneObject(index, name, sdf, material, bounds);
     this._objects.push(obj);
     return obj;
   }
