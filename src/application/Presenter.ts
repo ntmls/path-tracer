@@ -15,6 +15,7 @@ import {
   MultiCoreEvents,
 } from "../infrastructure/nulticore/CanvasSensorMultiCore";
 import { View } from "./View";
+import { BoundsEstimator } from "../domain/common/BoundsEstimtor"
 
 export class Presenter implements MultiCoreEvents {
   private view: View;
@@ -88,6 +89,13 @@ export class Presenter implements MultiCoreEvents {
     this.view.updateRenderStatistics(data);
   }
 
+  estimateBounds(item: sceneObjectViewModel): void {
+    const estimator = new BoundsEstimator();
+    const obj = this.scene.objects[item.index];
+    const bounds = estimator.estimate(obj.sdf);
+    obj.bounds = bounds;
+  }
+
   private buildSceneViewModel(scene: Scene): sceneObjectsViewModel {
     const viewModel = new sceneObjectsViewModel();
     const len = scene.objects.length;
@@ -100,7 +108,6 @@ export class Presenter implements MultiCoreEvents {
     }
     return viewModel;
   }
-
 }
 
 export class ProfileViewModel {
@@ -119,6 +126,6 @@ export class sceneObjectsViewModel {
 
 export class sceneObjectViewModel {
   index = 0;
-  type = '';
-  name = '';
+  type = "";
+  name = "";
 }

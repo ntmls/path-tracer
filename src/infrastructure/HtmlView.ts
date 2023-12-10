@@ -100,6 +100,13 @@ export class HtmlView implements View {
 
     // delete all the rows
     for (let i = tbody.rows.length - 1; i >= 0; i--) {
+      const row = tbody.rows.item(i);
+      if (row) {
+        for (let j = 0; j < row.cells.length; j++) {
+          const cell = row?.cells.item(j);
+          cell?.firstChild?.removeEventListener("click", null);
+        }
+      }
       tbody.deleteRow(i);
     }
 
@@ -107,11 +114,18 @@ export class HtmlView implements View {
     for (const item of viewModel.items) {
       const row = tbody.insertRow();
       let cell = row.insertCell();
+      cell.innerHTML = item.index.toString();
+
+      cell = row. insertCell();
       cell.innerHTML = item.name;
 
       cell = row.insertCell();
       cell.innerHTML = item.type;
-      
+
+      cell = row.insertCell();
+      const button = cell.appendChild(document.createElement("button"));
+      button.innerHTML = "Estimate Bounds";
+      button.addEventListener('click', () => this.presenter.estimateBounds(item));
     }
   }
 
