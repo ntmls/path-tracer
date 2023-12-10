@@ -1,4 +1,3 @@
-import { availableParallelism } from "os";
 import { SignedDistanceFunction } from "./Abstractions";
 import { Bounds, SphereBounds, Unbounded } from "./SceneDefinition/SceneObject";
 import { Vector } from "./Vector";

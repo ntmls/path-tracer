@@ -93,7 +93,6 @@ export class Presenter implements MultiCoreEvents {
     const estimator = new BoundsEstimator();
     const obj = this.scene.objects[item.index];
     const bounds = estimator.estimate(obj.sdf);
-    obj.bounds = bounds;
   }
 
   private buildSceneViewModel(scene: Scene): sceneObjectsViewModel {
