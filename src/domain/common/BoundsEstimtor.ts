@@ -5,12 +5,17 @@ import { Vector } from "./Vector";
 export class BoundsEstimator {
   estimate(sdf: SignedDistanceFunction): Bounds {
     const tolerance = 0.05;
-    let samples = this.sampleSignedDistanceField(sdf);
+    const startingPoint = this.findGoodStartingPoint();
+    let samples = this.sampleSignedDistanceField(sdf, startingPoint);
     samples = this.filterSamples(samples, tolerance);
-    const center = this.fidnCenter(samples);
+    const center = this.findCenter(samples);
     const radius = this.findRadius(samples, center);
     alert(`${radius} ${center.x} ${center.y} ${center.z}`);
     return new SphereBounds(center, radius);
+  }
+
+  private findGoodStartingPoint() {
+    return new Vector(0, 6, 0);
   }
 
   private findRadius(samples: SdfSample[], center: Vector) {
@@ -24,7 +29,7 @@ export class BoundsEstimator {
     return maxRadius;
   }
 
-  private fidnCenter(samples: SdfSample[]) {
+  private findCenter(samples: SdfSample[]) {
     let xMin = samples[0].point.x;
     let yMin = samples[0].point.y;
     let zMin = samples[0].point.z;
@@ -59,31 +64,29 @@ export class BoundsEstimator {
     return results;
   }
 
-  private sampleSignedDistanceField(sdf: SignedDistanceFunction): SdfSample[] {
+  private sampleSignedDistanceField(
+    sdf: SignedDistanceFunction,
+    startingPoint: Vector
+  ): SdfSample[] {
+    const samples: SdfSample[] = [];
     let accepted = 0;
     let rejected = 0;
-
-    const samples: SdfSample[] = [];
-
-    // let current = new Vector(-0.039451172,	4.99526303,	-0.032226507);
-    let current = new Vector(0, 0, 0);
-    let currentDist = sdf.distance(current);
+    let current = startingPoint;
+    let currentDist = sdf.distance(startingPoint);
     let currentProb = this.toProbability(currentDist);
     for (let i = 0; i < 10000; i++) {
-      const proposal = this.createProposal(current);
+      const proposal = this.createProposal(startingPoint);
       const proposedDist = sdf.distance(proposal);
       const proposedProb = this.toProbability(proposedDist);
-
       if (this.shouldAccept(proposedProb, currentProb)) {
-        current = proposal;
+        startingPoint = proposal;
         currentDist = proposedDist;
         currentProb = proposedProb;
         accepted += 1;
       } else {
         rejected += 1;
       }
-
-      samples.push(new SdfSample(currentDist, current));
+      samples.push(new SdfSample(currentDist, startingPoint));
     }
 
     // extract for visualization

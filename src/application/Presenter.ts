@@ -2,6 +2,8 @@ import {
   BottleBodyProfileSdf,
   BottleNeck,
   BottleCapProfile,
+  BottleCapSpout as BottleCapSpout,
+  SdfXY,
 } from "../domain/BottleSceneBuilder";
 import {
   SceneBuilder,
@@ -44,6 +46,11 @@ export class Presenter implements MultiCoreEvents {
     let bottleCapSdf = new BottleCapProfile();
     this.profiles.push(
       new ProfileViewModel(bottleCapSdf, "Bottle - Cap", 0, 4, 75)
+    );
+
+    let bottleSpoutSdf = new SdfXY(new BottleCapSpout());
+    this.profiles.push(
+      new ProfileViewModel(bottleSpoutSdf, "Bottle - Spout", 0, 6, 75)
     );
   }
 

@@ -23,6 +23,11 @@ export class Vector2 {
     const dy = this.y - other.y;
     return Math.sqrt(dx * dx + dy * dy);
   }
+  distanceSquaredFrom(other: Vector2): number {
+    const dx = this.x - other.x;
+    const dy = this.y - other.y;
+    return dx * dx + dy * dy;
+  }
   minus(other: Vector2): Vector2 {
     return new Vector2(this.x - other.x, this.y - other.y);
   }

@@ -4,6 +4,7 @@ import {
   SignedDistanceFunction2d,
   SceneBuilder,
   LightFactory,
+  SignedDistanceFunction,
 } from "./common/Abstractions";
 import { Polygon } from "./common/Polygon";
 import { RevolutionSdf, UnionSdf2, ZPlaneSdf } from "./common/sdf/Sdf";
@@ -42,7 +43,7 @@ export class BottleSceneBuilder implements SceneBuilder {
     // build the bottle body
     let bottleProfile: SignedDistanceFunction2d = new BottleBodyProfileSdf();
     let bottleNeck: SignedDistanceFunction2d = new BottleNeck();
-    const bottleBodyBounds = new SphereBounds(new Vector(0, 2.5, 0), 2.7)
+    const bottleBodyBounds = new SphereBounds(new Vector(0, 2.5, 0), 2.7);
     bottleProfile = new UnionSdf2(bottleProfile, bottleNeck);
     scene.addObject(
       "Bottle Body",
@@ -55,6 +56,10 @@ export class BottleSceneBuilder implements SceneBuilder {
     let bottleCap = new RevolutionSdf(bottleCapProfile);
     const bounds = new SphereBounds(new Vector(0, 5.4, 0), 1);
     scene.addObject("Bottle Cap", bottleCap, bottleCapMaterial, bounds);
+
+    let bottleCapSpout = new BottleCapSpout();
+    const bottleCapSpoutBounds = new SphereBounds(new Vector(.752, 5.984, 0), .87);
+    scene.addObject("Bottle Cap Spout", bottleCapSpout, bottleCapMaterial, bottleCapSpoutBounds);
 
     // spherical light
     const lightPosition = new Vector(-40, 10.0, -80);
@@ -179,5 +184,103 @@ export class BottleCapProfile implements SignedDistanceFunction2d {
 
   distance(position: Vector2): number {
     return this.polygon.distance(position);
+  }
+}
+
+export class SdfXY implements SignedDistanceFunction2d {
+  constructor(private sdf3d: SignedDistanceFunction) {}
+  distance(position: Vector2): number {
+    return this.sdf3d.distance(new Vector(position.x, position.y, 0));
+  }
+}
+
+export class BottleCapSpout implements SignedDistanceFunction {
+  private pill1: Pill;
+  private pill2: Pill;
+
+  constructor() {
+    const yOffset = 6.025;
+    const p1 = new Vector(0, yOffset, 0);
+    const p2 = new Vector(1.25, yOffset, 0);
+    const p3 = new Vector(1.5, yOffset - 0.125, 0);
+    this.pill1 = new Pill(p1, p2);
+    this.pill2 = new Pill(p2, p3); 
+  }
+  distance(position: Vector): number {
+    const dist1 = this.pill1.distanceSquared(position);
+    const dist2 = this.pill2.distanceSquared(position);
+    const dist = Math.sqrt(Math.min(dist1, dist2));
+    return this.shell(dist, 0.05, 0.025);
+  }
+
+  private shell(value: number, radius1: number, radius2: number): number {
+    return Math.abs(value - radius1) - radius2;
+  }
+
+  /*
+  distance(position: Vector2): number {
+    const center = new Vector2(1, 1);
+    const up = new Vector2(0, 1);
+    const vect = position.minus(center).normalize();
+    const x = up.dot(vect); // cos
+    const y = position.distanceFrom(center) - 1;
+    const newPosition = new Vector2(x, Math.abs(y));
+    return this.tubeProfile(newPosition);
+  }
+  */
+
+  private tubeProfile(position: Vector2): number {
+    // handle inside
+    if (
+      position.y < 0.2 &&
+      position.y > 0.1 &&
+      position.x < 1 &&
+      position.x > -1
+    ) {
+      const v1 = 0.2 - position.y;
+      const v2 = position.y - 0.1;
+      const v3 = 1 - position.x;
+      const v4 = position.x - -1;
+      const m1 = Math.min(v1, v2);
+      const m2 = Math.min(v3, v4);
+      return -Math.min(m1, m2);
+    }
+
+    // handle outside
+    let x = position.x;
+    let y = position.y;
+
+    if (x > 1) x = 1;
+    if (x < -1) x = -1;
+    if (y > 0.2) y = 0.2;
+    if (y < 0.1) y = 0.1;
+
+    const constrained = new Vector2(x, y);
+    return position.distanceFrom(constrained);
+  }
+}
+
+class Pill {
+  private readonly vect1: Vector;
+  private readonly vect1Norm: Vector;
+  private readonly vect1mag: number;
+
+  constructor(readonly start: Vector, readonly end: Vector) {
+    this.vect1 = this.end.minus(this.start);
+    this.vect1Norm = this.vect1.normalize();
+    this.vect1mag = this.vect1.magnitude;
+  }
+
+  distanceSquared(position: Vector) {
+    const vect2 = position.minus(this.start);
+    let time = this.vect1Norm.dot(vect2);
+    if (time < 0) {
+      time = 0;
+    }
+    if (time > this.vect1mag) {
+      time = this.vect1mag
+    }
+    const ref = this.vect1Norm.scale(time);
+    return ref.distanceSquaredFrom(vect2);
   }
 }
