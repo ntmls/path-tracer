@@ -1,4 +1,4 @@
-import { Bounds, SceneObject, SphereBounds, Unbounded } from "./SceneObject";
+import { SceneObject } from "./SceneObject";
 import {
   DirectLight,
   LightFactory,
@@ -9,6 +9,9 @@ import { RgbColor } from "../RgbColor";
 import { Material } from "../Material";
 import { Vector } from "../Vector";
 import { SphereSdf } from "../sdf/SphereSdf";
+import { Unbounded } from "../bounds/Unbounded";
+import { Bounds } from "../bounds/Bounds";
+import { SphereBounds } from "../bounds/SphereBounds";
 
 export class Scene {
   constructor(
@@ -28,7 +31,7 @@ export class Scene {
   addObject(
     name: string,
     sdf: SignedDistanceFunction,
-    material: Material, 
+    material: Material,
     bounds: Bounds = new Unbounded()
   ): SceneObject {
     const index = this.objects.length;

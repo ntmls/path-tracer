@@ -12,7 +12,7 @@ import { Functions } from "./common/Functions";
 import { Material } from "./common/Material";
 import { RgbColor } from "./common/RgbColor";
 import { Scene } from "./common/SceneDefinition/Scene";
-import { SphereBounds } from "./common/SceneDefinition/SceneObject";
+import { SphereBounds } from "./common/bounds/SphereBounds";
 
 export class BottleSceneBuilder implements SceneBuilder {
   constructor(private readonly lightFactory: LightFactory) {}

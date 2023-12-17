@@ -1,6 +1,7 @@
 import { SignedDistanceFunction } from "./Abstractions";
-import { Bounds, SphereBounds, Unbounded } from "./SceneDefinition/SceneObject";
 import { Vector } from "./Vector";
+import { Bounds } from "./bounds/Bounds";
+import { SphereBounds } from "./bounds/SphereBounds";
 
 export class BoundsEstimator {
   estimate(sdf: SignedDistanceFunction): Bounds {
