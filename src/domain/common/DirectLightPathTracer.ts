@@ -52,16 +52,21 @@ export class DirectLightPathTracer implements RayTracer {
       }
     }
 
-    // russian roulette to limit bounces
+    
     let probNewRay = 1;
+    
+    /*
+    // russian roulette termination strategy
     if (depth > 3) {
-      // return RgbColor.black;
       probNewRay = material.albedo.maxComponent();
       if (this.random.random() > probNewRay) {
-        // terminate
         return RgbColor.black;
       }
     }
+    */
+    
+    // termination strategy
+    if (depth > 3) return RgbColor.black;
 
     // back up a little
     const nextPosition = hitInfo.hitAt.add(ray.direction.scale(-0.01));
@@ -75,67 +80,79 @@ export class DirectLightPathTracer implements RayTracer {
       material
     ).divideScalar(probNewRay);
 
-    // Pure specular
     if (material.specularAmount > 0) {
       if (this.random.random() < material.specularAmount) {
         if (material.glossyAmount === 0) {
-          const reflectDirection = ray.direction.reflect(hitInfo.normal);
-          const reflectRay = new Ray(nextPosition, reflectDirection);
-          const brdf = new RgbColor(1, 1, 1).divideScalar(Math.PI);
-          const reflected = this.tracePath(
-            reflectRay,
-            scene,
-            depth + 1,
-            true,
-            0
-          )
-            .multiply(brdf)
-            .divideScalar(probNewRay);
-          return reflected.add(direct);
-        } else {
-          // GLOSSY
-          const diffuseDirection = this.hemisphereSampler.sample(
-            hitInfo.normal
-          );
-          const reflectDirection = ray.direction.reflect(hitInfo.normal);
-          const blendedDirection = diffuseDirection
-            .lerp(material.glossyAmount, reflectDirection)
-            .normalize();
-          const reflectRay = new Ray(nextPosition, blendedDirection);
-          const cos = diffuseDirection.dot(hitInfo.normal);
-          const brdf = new RgbColor(1, 1, 1).divideScalar(Math.PI);
-          const pdf = Functions.lerp(
-            material.glossyAmount,
-            this.hemispherePdf,
-            1
-          );
-          const blendedCos = Functions.lerp(material.glossyAmount, cos, 1);
-          const reflected = this.tracePath(
-            reflectRay,
-            scene,
-            depth + 1,
-            true,
-            material.glossyAmount
-          )
-            .multiply(brdf)
-            .scale(blendedCos)
-            .divideScalar(pdf * probNewRay);
-          return reflected.add(direct.scale(material.glossyAmount));
+          const reflected = this.getPerfectReflection(ray, hitInfo, nextPosition, scene, depth, probNewRay);
+          return reflected;
+        } else { 
+          const reflected = this.getGlossyReflection(hitInfo, ray, material, nextPosition, scene, depth, probNewRay);
+          return reflected;
         }
       }
     }
 
-    // INDIRECT = get incoming light incomingLight
+    const indirect = this.sampleIndirect(hitInfo, nextPosition, scene, depth, material, probNewRay);
+    return indirect.add(direct);
+  }
+
+  private getPerfectReflection(ray: Ray, hitInfo: RayMarchResult, nextPosition: Vector, scene: Scene, depth: number, probNewRay: number) {
+    const reflectDirection = ray.direction.reflect(hitInfo.normal);
+    const reflectRay = new Ray(nextPosition, reflectDirection);
+    const brdf = new RgbColor(1, 1, 1).divideScalar(Math.PI);
+    const reflected = this.tracePath(
+      reflectRay,
+      scene,
+      depth + 1,
+      true,
+      0
+    )
+      .multiply(brdf)
+      .divideScalar(probNewRay);
+    return reflected;
+  }
+
+  private getGlossyReflection(hitInfo: RayMarchResult, ray: Ray, material: Material, nextPosition: Vector, scene: Scene, depth: number, probNewRay: number) {
+    const diffuseDirection = this.hemisphereSampler.sample(
+      hitInfo.normal
+    );
+    const reflectDirection = ray.direction.reflect(hitInfo.normal);
+    const blendedDirection = diffuseDirection
+      .lerp(material.glossyAmount, reflectDirection)
+      .normalize();
+    const reflectRay = new Ray(nextPosition, blendedDirection);
+    const cos = diffuseDirection.dot(hitInfo.normal);
+    const brdf = new RgbColor(1, 1, 1).divideScalar(Math.PI);
+    const pdf = Functions.lerp(
+      material.glossyAmount,
+      this.hemispherePdf,
+      1
+    );
+    const blendedCos = Functions.lerp(material.glossyAmount, cos, 1);
+    const reflected = this.tracePath(
+      reflectRay,
+      scene,
+      depth + 1,
+      true,
+      material.glossyAmount
+    )
+      .multiply(brdf)
+      .scale(blendedCos)
+      .divideScalar(pdf * probNewRay);
+    return reflected;
+  }
+
+  private sampleIndirect(hitInfo: RayMarchResult, nextPosition: Vector, scene: Scene, depth: number, material: Material, probNewRay: number) {
     const newDirection = this.hemisphereSampler.sample(hitInfo.normal);
     const newRay = new Ray(nextPosition, newDirection);
     const cos = newRay.direction.dot(hitInfo.normal);
-    const incomingLight = this.tracePath(newRay, scene, depth + 1, false, 1);
+    const bounce = this.tracePath(newRay, scene, depth + 1, false, 1);
     const brdf = material.albedo.divideScalar(Math.PI); // Energy conservation
-    const indirect = incomingLight
+    const indirect = bounce
       .multiply(brdf)
       .scale(cos)
       .divideScalar(this.hemispherePdf * probNewRay);
-    return indirect.add(direct);
+    return indirect;
   }
 
   private calculateDirect(

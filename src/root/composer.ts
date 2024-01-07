@@ -86,19 +86,19 @@ export class Composer {
       this.pathTracer,
       this.random,
       camera, 
-      7.5 // clamp threshold
+      30.0 // clamp threshold
     );
   
-   /*
+    /*
     const pixelSampler = new StratifiedPixelSampler(
       8, // sub sample pattern8x8 = 64 subsamples
       this.pathTracer,
       this.random,
       camera, 
-      7.5 // clamp threshold
+      30.0 // clamp threshold
     );
     */
-
+  
     return new Slave(
       camera,
       new CellSensor(pixelSampler),

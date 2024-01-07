@@ -7,7 +7,13 @@ import {
   SignedDistanceFunction,
 } from "./common/Abstractions";
 import { Polygon } from "./common/Polygon";
-import { RevolutionSdf, UnionSdf2, ZPlaneSdf } from "./common/sdf/Sdf";
+import {
+  RevolutionSdf,
+  UnionSdf2,
+  XPlaneSdf,
+  YPlaneSdf,
+  ZPlaneSdf,
+} from "./common/sdf/Sdf";
 import { Functions } from "./common/Functions";
 import { Material } from "./common/Material";
 import { RgbColor } from "./common/RgbColor";
@@ -23,55 +29,120 @@ export class BottleSceneBuilder implements SceneBuilder {
     const bottleMaterial = new Material(
       new RgbColor(0.9, 0.9, 0.9),
       RgbColor.black,
-      0.25,
-      0.6
+      0.4,
+      0.5
     );
+
     const bottleCapMaterial = new Material(
       new RgbColor(0.1, 0.1, 0.1),
       RgbColor.black,
       0.5
     );
+
     const backgroundPlaneMaterial = new Material(
-      new RgbColor(0.75, 0.75, 0.75),
+      new RgbColor(0.9, 0.9, 0.9),
+      RgbColor.black,
+      0.75,
+      0.05
+    );
+
+    const roomMaterial = new Material(
+      new RgbColor(0.85, 0.85, 0.85),
       RgbColor.black
     );
 
     // build the back plane
-    const backPlaneSdf = new ZPlaneSdf(2);
-    scene.addObject("Back Wall", backPlaneSdf, backgroundPlaneMaterial);
+    const backPlaneSdf = new ZPlaneSdf(4, 4);
+    scene.addObject("Tile Wall", backPlaneSdf, backgroundPlaneMaterial);
 
-    // build the bottle body
-    let bottleProfile: SignedDistanceFunction2d = new BottleBodyProfileSdf();
-    let bottleNeck: SignedDistanceFunction2d = new BottleNeck();
-    const bottleBodyBounds = new SphereBounds(new Vector(0, 2.5, 0), 2.7);
-    bottleProfile = new UnionSdf2(bottleProfile, bottleNeck);
-    scene.addObject(
-      "Bottle Body",
-      new RevolutionSdf(bottleProfile),
-      bottleMaterial
-    );
-
-    // bottle cap
-    let bottleCapProfile = new BottleCapProfile();
-    let bottleCap = new RevolutionSdf(bottleCapProfile);
-    const bounds = new SphereBounds(new Vector(0, 5.4, 0), 1);
-    scene.addObject("Bottle Cap", bottleCap, bottleCapMaterial, bounds);
-
-    let bottleCapSpout = new BottleCapSpout();
-    const bottleCapSpoutBounds = new SphereBounds(new Vector(.752, 5.984, 0), .87);
-    scene.addObject("Bottle Cap Spout", bottleCapSpout, bottleCapMaterial, bottleCapSpoutBounds);
+    // room
+    const back = new ZPlaneSdf(-122, 4);
+    const right = new XPlaneSdf(62, 4);
+    const left = new XPlaneSdf(-62, 4);
+    const ceil = new YPlaneSdf(4 * 12 + 2, 4);
+    const floor = new YPlaneSdf(-54 * 12 + 2, 4);
+    scene.addObject("Plane behind camera", back, roomMaterial);
+    scene.addObject("Plane left of camera", left, roomMaterial);
+    scene.addObject("Plane right of camera", right, roomMaterial);
+    scene.addObject("Ceiling", ceil, roomMaterial);
+    scene.addObject("Floor", floor, roomMaterial);
 
     // spherical light
     const lightPosition = new Vector(-40, 10.0, -80);
     const lightRadius = 10;
-    const lightColor = new RgbColor(55, 53, 48);
+    const lightColor = new RgbColor(26, 26, 25);
     scene.addSphericalLight(
       "Sphirical Light",
       lightPosition,
       lightRadius,
-      lightColor
+      lightColor,
+      true
     );
+
+    // build a bottle
+    this.buildBottle(scene, bottleMaterial, bottleCapMaterial, -3.25);
+    this.buildBottle(scene, bottleMaterial, bottleCapMaterial, 0);
+    this.buildBottle(scene, bottleMaterial, bottleCapMaterial, 3.25);
+
     return scene;
+  }
+
+  private buildBottle(
+    scene: Scene,
+    bottleMaterial: Material,
+    bottleCapMaterial: Material,
+    offsetX: number
+  ) {
+    // build the bottle body
+    let bottleProfile: SignedDistanceFunction2d = new BottleBodyProfileSdf();
+    let bottleNeck: SignedDistanceFunction2d = new BottleNeck();
+    bottleProfile = new UnionSdf2(bottleProfile, bottleNeck);
+    const bottleBodySdf = new OffsetXSdf(
+      offsetX,
+      new RevolutionSdf(bottleProfile)
+    );
+    const bottleBodyBounds = new SphereBounds(new Vector(offsetX, 2.5, 0), 2.7);
+    scene.addObject(
+      "Bottle Body",
+      bottleBodySdf,
+      bottleMaterial,
+      bottleBodyBounds
+    );
+
+    // bottle cap
+    let bottleCapProfile = new BottleCapProfile();
+    const bottleCapSdf = new OffsetXSdf(
+      offsetX,
+      new RevolutionSdf(bottleCapProfile)
+    );
+    const bottleCapBounds = new SphereBounds(new Vector(offsetX, 5.4, 0), 1);
+    scene.addObject(
+      "Bottle Cap",
+      bottleCapSdf,
+      bottleCapMaterial,
+      bottleCapBounds
+    );
+
+    // bottle cap spout
+    let bottleCapSpout = new OffsetXSdf(offsetX, new BottleCapSpout());
+    const bottleCapSpoutBounds = new SphereBounds(
+      new Vector(0.752 + offsetX, 5.984, 0),
+      0.87
+    );
+    scene.addObject(
+      "Bottle Cap Spout",
+      bottleCapSpout,
+      bottleCapMaterial,
+      bottleCapSpoutBounds
+    );
+  }
+}
+
+export class OffsetXSdf implements SignedDistanceFunction {
+  constructor(private offset: number, private sdf: SignedDistanceFunction) {}
+  distance(position: Vector): number {
+    const offset = new Vector(position.x - this.offset, position.y, position.z);
+    return this.sdf.distance(offset);
   }
 }
 
@@ -204,7 +275,7 @@ export class BottleCapSpout implements SignedDistanceFunction {
     const p2 = new Vector(1.25, yOffset, 0);
     const p3 = new Vector(1.5, yOffset - 0.125, 0);
     this.pill1 = new Pill(p1, p2);
-    this.pill2 = new Pill(p2, p3); 
+    this.pill2 = new Pill(p2, p3);
   }
   distance(position: Vector): number {
     const dist1 = this.pill1.distanceSquared(position);
@@ -278,7 +349,7 @@ class Pill {
       time = 0;
     }
     if (time > this.vect1mag) {
-      time = this.vect1mag
+      time = this.vect1mag;
     }
     const ref = this.vect1Norm.scale(time);
     return ref.distanceSquaredFrom(vect2);

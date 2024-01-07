@@ -1,39 +1,50 @@
 import { Vector } from "../Vector";
 import { Vector2 } from "../Vector2";
-import { SignedDistanceFunction, SignedDistanceFunction2d } from "../Abstractions";
-
+import {
+  SignedDistanceFunction,
+  SignedDistanceFunction2d,
+} from "../Abstractions";
 
 export class UnionSdf2 implements SignedDistanceFunction2d {
   constructor(
     private sdf1: SignedDistanceFunction2d,
     private sdf2: SignedDistanceFunction2d
-  ) { }
+  ) {}
   distance(position: Vector2): number {
     return Math.min(this.sdf1.distance(position), this.sdf2.distance(position));
   }
 }
 
 export class XPlaneSdf implements SignedDistanceFunction {
-  constructor(private readonly x: number) { }
+  private readonly halfThickness: number;
+  constructor(private readonly x: number, private readonly thickness: number) {
+    this.halfThickness = thickness / 2;
+  }
 
   distance(position: Vector): number {
-    return -position.x + this.x;
+    return Math.abs(position.x - this.x) - this.halfThickness;
   }
 }
 
 export class YPlaneSdf implements SignedDistanceFunction {
-  constructor(private readonly y: number) { }
+  private readonly halfThickness: number;
+  constructor(private readonly y: number, private readonly thickness: number) {
+    this.halfThickness = thickness / 2;
+  }
 
   distance(position: Vector): number {
-    return -position.y + this.y;
+    return Math.abs(position.y - this.y) - this.halfThickness;
   }
 }
 
 export class ZPlaneSdf implements SignedDistanceFunction {
-  constructor(private readonly z: number) { }
+  private readonly halfThickness: number;
+  constructor(private readonly z: number, private readonly thickness: number) {
+    this.halfThickness = thickness / 2;
+  }
 
   distance(position: Vector): number {
-    return -position.z + this.z;
+    return Math.abs(position.z - this.z) - this.halfThickness;
   }
 }
 
