@@ -6,7 +6,6 @@ import { Ray } from "./Ray";
 import { RayMarcher } from "./RayMarcher";
 import { RgbColor } from "./RgbColor";
 import { Scene } from "./SceneDefinition/Scene";
-import { SceneObject } from "./SceneDefinition/SceneObject";
 import { Vector } from "./Vector";
 import { HemisphereSurfaceSampler } from "./sampling/HemisphereSurfaceSampler";
 
@@ -52,9 +51,8 @@ export class DirectLightPathTracer implements RayTracer {
       }
     }
 
-    
     let probNewRay = 1;
-    
+
     /*
     // russian roulette termination strategy
     if (depth > 3) {
@@ -64,12 +62,17 @@ export class DirectLightPathTracer implements RayTracer {
       }
     }
     */
-    
+
     // termination strategy
     if (depth > 3) return RgbColor.black;
 
     // back up a little
-    const nextPosition = hitInfo.hitAt.add(ray.direction.scale(-0.01));
+    // const nextPosition = hitInfo.hitAt.add(ray.direction.scale(-0.01));
+    const nextPosition = new Vector(
+      hitInfo.hitAt.x + ray.direction.x * -0.01,
+      hitInfo.hitAt.y + ray.direction.y * -0.01,
+      hitInfo.hitAt.z + ray.direction.z * -0.01
+    );
 
     // DIRECT - Sample lights directly
     // const direct = new RgbColor(.5, .5, .5);
@@ -83,39 +86,68 @@ export class DirectLightPathTracer implements RayTracer {
     if (material.specularAmount > 0) {
       if (this.random.random() < material.specularAmount) {
         if (material.glossyAmount === 0) {
-          const reflected = this.getPerfectReflection(ray, hitInfo, nextPosition, scene, depth, probNewRay);
+          const reflected = this.getPerfectReflection(
+            ray,
+            hitInfo,
+            nextPosition,
+            scene,
+            depth,
+            probNewRay
+          );
           return reflected;
-        } else { 
-          const reflected = this.getGlossyReflection(hitInfo, ray, material, nextPosition, scene, depth, probNewRay);
+        } else {
+          const reflected = this.getGlossyReflection(
+            hitInfo,
+            ray,
+            material,
+            nextPosition,
+            scene,
+            depth,
+            probNewRay
+          );
           return reflected;
         }
       }
     }
 
-    const indirect = this.sampleIndirect(hitInfo, nextPosition, scene, depth, material, probNewRay);
+    const indirect = this.sampleIndirect(
+      hitInfo,
+      nextPosition,
+      scene,
+      depth,
+      material,
+      probNewRay
+    );
     return indirect.add(direct);
   }
 
-  private getPerfectReflection(ray: Ray, hitInfo: RayMarchResult, nextPosition: Vector, scene: Scene, depth: number, probNewRay: number) {
+  private getPerfectReflection(
+    ray: Ray,
+    hitInfo: RayMarchResult,
+    nextPosition: Vector,
+    scene: Scene,
+    depth: number,
+    probNewRay: number
+  ) {
     const reflectDirection = ray.direction.reflect(hitInfo.normal);
     const reflectRay = new Ray(nextPosition, reflectDirection);
     const brdf = new RgbColor(1, 1, 1).divideScalar(Math.PI);
-    const reflected = this.tracePath(
-      reflectRay,
-      scene,
-      depth + 1,
-      true,
-      0
-    )
+    const reflected = this.tracePath(reflectRay, scene, depth + 1, true, 0)
       .multiply(brdf)
       .divideScalar(probNewRay);
     return reflected;
   }
 
-  private getGlossyReflection(hitInfo: RayMarchResult, ray: Ray, material: Material, nextPosition: Vector, scene: Scene, depth: number, probNewRay: number) {
-    const diffuseDirection = this.hemisphereSampler.sample(
-      hitInfo.normal
-    );
+  private getGlossyReflection(
+    hitInfo: RayMarchResult,
+    ray: Ray,
+    material: Material,
+    nextPosition: Vector,
+    scene: Scene,
+    depth: number,
+    probNewRay: number
+  ) {
+    const diffuseDirection = this.hemisphereSampler.sample(hitInfo.normal);
     const reflectDirection = ray.direction.reflect(hitInfo.normal);
     const blendedDirection = diffuseDirection
       .lerp(material.glossyAmount, reflectDirection)
@@ -123,11 +155,7 @@ export class DirectLightPathTracer implements RayTracer {
     const reflectRay = new Ray(nextPosition, blendedDirection);
     const cos = diffuseDirection.dot(hitInfo.normal);
     const brdf = new RgbColor(1, 1, 1).divideScalar(Math.PI);
-    const pdf = Functions.lerp(
-      material.glossyAmount,
-      this.hemispherePdf,
-      1
-    );
+    const pdf = Functions.lerp(material.glossyAmount, this.hemispherePdf, 1);
     const blendedCos = Functions.lerp(material.glossyAmount, cos, 1);
     const reflected = this.tracePath(
       reflectRay,
@@ -135,23 +163,36 @@ export class DirectLightPathTracer implements RayTracer {
       depth + 1,
       true,
       material.glossyAmount
-    )
-      .multiply(brdf)
-      .scale(blendedCos)
-      .divideScalar(pdf * probNewRay);
-    return reflected;
+    );
+
+    const multiplier = blendedCos * (1 / (pdf * probNewRay));
+    const contribution = new RgbColor(
+      reflected.red * brdf.red * multiplier,
+      reflected.green * brdf.green * multiplier,
+      reflected.blue * brdf.blue * multiplier
+    );
+    return contribution;
   }
 
-  private sampleIndirect(hitInfo: RayMarchResult, nextPosition: Vector, scene: Scene, depth: number, material: Material, probNewRay: number) {
+  private sampleIndirect(
+    hitInfo: RayMarchResult,
+    nextPosition: Vector,
+    scene: Scene,
+    depth: number,
+    material: Material,
+    probNewRay: number
+  ) {
     const newDirection = this.hemisphereSampler.sample(hitInfo.normal);
     const newRay = new Ray(nextPosition, newDirection);
     const cos = newRay.direction.dot(hitInfo.normal);
     const bounce = this.tracePath(newRay, scene, depth + 1, false, 1);
-    const brdf = material.albedo.divideScalar(Math.PI); // Energy conservation
-    const indirect = bounce
-      .multiply(brdf)
-      .scale(cos)
-      .divideScalar(this.hemispherePdf * probNewRay);
+    const multiplier =
+      cos * (1 / (this.hemispherePdf * probNewRay)) * this.oneOverPi;
+    const indirect = new RgbColor(
+      bounce.red * material.albedo.red * multiplier,
+      bounce.green * material.albedo.green * multiplier,
+      bounce.blue * material.albedo.blue * multiplier
+    );
     return indirect;
   }
 
@@ -167,7 +208,9 @@ export class DirectLightPathTracer implements RayTracer {
     const light = scene.directLights[lightIndex];
     if (light) {
       const sample = light.sample(position);
-      const objectsInBounds = scene.objects.filter((x) => x.bounds.inBounds(sample.ray));
+      const objectsInBounds = scene.objects.filter((x) =>
+        x.bounds.inBounds(sample.ray)
+      );
       const rayResult = this.rayMarcher.marchRay(objectsInBounds, sample.ray);
       if (
         // if we hit the light
@@ -178,11 +221,12 @@ export class DirectLightPathTracer implements RayTracer {
         const directCos = sample.ray.direction.dot(hitInfo.normal);
         const intensity =
           sample.visibleArea / (sample.distance * sample.distance);
-        const brdf = material.albedo.divideScalar(Math.PI);
-        return directLightColor
-          .multiply(brdf)
-          .scale(directCos)
-          .scale(intensity);
+        const multiplier = intensity * this.oneOverPi * directCos;
+        return new RgbColor(
+          directLightColor.red * material.albedo.red * multiplier,
+          directLightColor.green * material.albedo.green * multiplier,
+          directLightColor.blue * material.albedo.blue * multiplier,
+        );
       }
       return RgbColor.black;
     }

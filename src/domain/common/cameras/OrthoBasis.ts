@@ -1,6 +1,5 @@
 import { Vector } from "../Vector";
 
-
 export class OrthoBasis {
   private constructor(
     readonly right: Vector,
