@@ -9,10 +9,13 @@ export class SphereBounds implements Bounds {
     this._radiusSquared = radius * radius;
   }
   inBounds(ray: Ray): boolean {
-    const vectToCenter = this.center.minus(ray.origin);
+    const rayOrigin = ray.origin;
+    const rayDirection = ray.direction;;
+    
     // project the vector to the center onto the ray
-    const time = vectToCenter.dot(ray.direction);
-    const projected = ray.pointAlongRay(time);
+    const time = this.center.minus(rayOrigin).dot(rayDirection);
+    const projected = rayOrigin.add(rayDirection.scale(time));
+
     const distanceSquared = projected.distanceSquaredFrom(this.center);
     if (distanceSquared > this._radiusSquared) {
       return false; // sphere does not intersect the line at all
