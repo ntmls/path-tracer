@@ -381,7 +381,8 @@ class TileBackgroundSdf implements SignedDistanceFunction {
     const resultX = this.sawTooth(this._sizeX, x + offsetX);
     const resultY = this.sawTooth(this._sizeY, y);
     const result = Math.min(resultX, resultY);
-    return Math.max(.05, Math.min(.2, result));
+    const transfer = this.profileTransfer(result)
+    return Math.max(.05, Math.min(.2, transfer));
   }
 
   private sawTooth(size: number, x: number): number {
@@ -389,5 +390,9 @@ class TileBackgroundSdf implements SignedDistanceFunction {
     const index = Math.round(slope);
     const frac = -Math.abs(size * (slope - index)) + 0.5 * size;
     return frac;
+  }
+
+  private profileTransfer(x: number): number {
+    return x;
   }
 }
