@@ -358,7 +358,7 @@ class Pill {
 
 class TileBackgroundSdf implements SignedDistanceFunction {
   private readonly halfThickness: number;
-  private _sizeX = 6.0;
+  private _sizeX = 5;
   private _sizeY = 3.0;
 
   constructor(private readonly z: number, private readonly thickness: number) {
@@ -367,7 +367,7 @@ class TileBackgroundSdf implements SignedDistanceFunction {
 
   distance(position: Vector): number {
     const result = Math.abs(position.z - this.z) - this.halfThickness;
-    return (result - this.displace(position.x, position.y)) * 0.75;
+    return (result - this.displace(position.x + 1.6, position.y - .95)) * 0.75;
   }
   private displace(x: number, y: number): number {
     const indexX = Math.round(x / this._sizeX);
@@ -381,8 +381,10 @@ class TileBackgroundSdf implements SignedDistanceFunction {
     const resultX = this.sawTooth(this._sizeX, x + offsetX);
     const resultY = this.sawTooth(this._sizeY, y);
     const result = Math.min(resultX, resultY);
-    const transfer = this.profileTransfer(result)
-    return Math.max(.05, Math.min(.2, transfer));
+    const transfer = this.transfer(result);
+    const ramp = this.curvedRamp(transfer);
+    return ramp / 8;
+    // return Math.max(.05, Math.min(.2, transfer));
   }
 
   private sawTooth(size: number, x: number): number {
@@ -392,7 +394,23 @@ class TileBackgroundSdf implements SignedDistanceFunction {
     return frac;
   }
 
-  private profileTransfer(x: number): number {
-    return x;
+  private transfer(x: number): number {
+    const slope = 4;
+    const intercept  = -.1;
+    const max = 1;
+    const min = 0;
+    const y = slope * x + intercept;
+    return Math.max(min, Math.min(max, y));
+  }
+
+  /**
+   * 
+   * @param x A value between 0 and infinity
+   * @returns A value between 0 and 1
+   */
+  private curvedRamp(x: number): number {
+    const xMinus1 = x - 1;
+    const x2 = xMinus1 * xMinus1;
+    return -(x2 * x2) + 1;
   }
 }
