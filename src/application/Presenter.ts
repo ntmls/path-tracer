@@ -17,7 +17,8 @@ import {
   MultiCoreEvents,
 } from "../infrastructure/nulticore/CanvasSensorMultiCore";
 import { View } from "./View";
-import { BoundsEstimator } from "../domain/common/BoundsEstimtor"
+import { BoundsEstimator } from "../domain/common/BoundsEstimtor";
+import { Vector2 } from "../domain/common/Vector2";
 
 export class Presenter implements MultiCoreEvents {
   private view: View;
@@ -51,6 +52,11 @@ export class Presenter implements MultiCoreEvents {
     let bottleSpoutSdf = new SdfXY(new BottleCapSpout());
     this.profiles.push(
       new ProfileViewModel(bottleSpoutSdf, "Bottle - Spout", 0, 6, 75)
+    );
+
+    let displacementProfile = new TileDisplacement();
+    this.profiles.push(
+      new ProfileViewModel(displacementProfile, "Displacement", 0, 0, 50)
     );
   }
 
@@ -134,4 +140,17 @@ export class sceneObjectViewModel {
   index = 0;
   type = "";
   name = "";
+}
+
+export class TileDisplacement implements SignedDistanceFunction2d {
+  private _size = 2.5;
+  distance(position: Vector2): number {
+    return position.y - this.saw(this._size, position.x);
+  }
+  private saw(size: number, x: number): number {
+    const slope = x / size;
+    const index = Math.round(slope);
+    const frac = -Math.abs(size * (slope - index)) + 0.5 * size;
+    return frac;
+  }
 }

@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "parcel src/root/index.html",
     "check": "tsc --noEmit --watch --target ES2020 --module ES2020 ./src/root/main.ts",
-    "build": "parcel build dist"
+    "build": "parcel build src/root/index.html"
   },
   "author": "Nathan Miles",
   "license": "ISC",

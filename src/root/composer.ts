@@ -82,7 +82,7 @@ export class Composer {
     const camera = this.createCamera();
     
     const pixelSampler = new RandomPixelSampler(
-      64, // number of samples per pixel
+      32, // number of samples per pixel
       this.pathTracer,
       this.random,
       camera, 

@@ -52,7 +52,7 @@ export class BottleSceneBuilder implements SceneBuilder {
     );
 
     // build the back plane
-    const backPlaneSdf = new ZPlaneSdf(4, 4);
+    const backPlaneSdf = new TileBackgroundSdf(4, 4);
     scene.addObject("Tile Wall", backPlaneSdf, backgroundPlaneMaterial);
 
     // room
@@ -353,5 +353,41 @@ class Pill {
     }
     const ref = this.vect1Norm.scale(time);
     return ref.distanceSquaredFrom(vect2);
+  }
+}
+
+class TileBackgroundSdf implements SignedDistanceFunction {
+  private readonly halfThickness: number;
+  private _sizeX = 6.0;
+  private _sizeY = 3.0;
+
+  constructor(private readonly z: number, private readonly thickness: number) {
+    this.halfThickness = thickness / 2;
+  }
+
+  distance(position: Vector): number {
+    const result = Math.abs(position.z - this.z) - this.halfThickness;
+    return (result - this.displace(position.x, position.y)) * 0.75;
+  }
+  private displace(x: number, y: number): number {
+    const indexX = Math.round(x / this._sizeX);
+    const indexY = Math.round(y / this._sizeY);
+
+    let offsetX = 0;
+    if (indexY % 2 === 0) {
+      offsetX = this._sizeX / 2;
+    }
+
+    const resultX = this.sawTooth(this._sizeX, x + offsetX);
+    const resultY = this.sawTooth(this._sizeY, y);
+    const result = Math.min(resultX, resultY);
+    return Math.max(.05, Math.min(.2, result));
+  }
+
+  private sawTooth(size: number, x: number): number {
+    const slope = x / size;
+    const index = Math.round(slope);
+    const frac = -Math.abs(size * (slope - index)) + 0.5 * size;
+    return frac;
   }
 }
