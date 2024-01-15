@@ -19,11 +19,12 @@ import { Material } from "./common/Material";
 import { RgbColor } from "./common/RgbColor";
 import { Scene } from "./common/SceneDefinition/Scene";
 import { SphereBounds } from "./common/bounds/SphereBounds";
+import { Kelvin } from "./common/Kelvin";
 
 export class BottleSceneBuilder implements SceneBuilder {
   constructor(private readonly lightFactory: LightFactory) {}
   build(): Scene {
-    const backgroundColor = new RgbColor(0.17, 0.23, 0.24);
+    const backgroundColor = Kelvin.k8000.scale(2);
     const scene = new Scene(this.lightFactory, backgroundColor);
 
     const bottleMaterial = new Material(
@@ -51,6 +52,8 @@ export class BottleSceneBuilder implements SceneBuilder {
       RgbColor.black
     );
 
+    const windowMaterial = new Material(RgbColor.black, backgroundColor);
+
     // build the back plane
     const backPlaneSdf = new TileBackgroundSdf(4, 4);
     scene.addObject("Tile Wall", backPlaneSdf, backgroundPlaneMaterial);
@@ -63,14 +66,14 @@ export class BottleSceneBuilder implements SceneBuilder {
     const floor = new YPlaneSdf(-54 * 12 + 2, 4);
     scene.addObject("Plane behind camera", back, roomMaterial);
     scene.addObject("Plane left of camera", left, roomMaterial);
-    scene.addObject("Plane right of camera", right, roomMaterial);
+    scene.addObject("Plane right of camera", right, windowMaterial);
     scene.addObject("Ceiling", ceil, roomMaterial);
     scene.addObject("Floor", floor, roomMaterial);
 
     // spherical light
     const lightPosition = new Vector(-40, 10.0, -80);
     const lightRadius = 10;
-    const lightColor = new RgbColor(26, 26, 25);
+    const lightColor = Kelvin.k4000.scale(25);
     scene.addSphericalLight(
       "Sphirical Light",
       lightPosition,
@@ -367,7 +370,7 @@ class TileBackgroundSdf implements SignedDistanceFunction {
 
   distance(position: Vector): number {
     const result = Math.abs(position.z - this.z) - this.halfThickness;
-    return (result - this.displace(position.x + 1.6, position.y - .95)) * 0.75;
+    return (result - this.displace(position.x + 1.6, position.y - 0.95)) * 0.75;
   }
   private displace(x: number, y: number): number {
     const indexX = Math.round(x / this._sizeX);
@@ -396,7 +399,7 @@ class TileBackgroundSdf implements SignedDistanceFunction {
 
   private transfer(x: number): number {
     const slope = 4;
-    const intercept  = -.1;
+    const intercept = -0.1;
     const max = 1;
     const min = 0;
     const y = slope * x + intercept;
@@ -404,7 +407,7 @@ class TileBackgroundSdf implements SignedDistanceFunction {
   }
 
   /**
-   * 
+   *
    * @param x A value between 0 and infinity
    * @returns A value between 0 and 1
    */
@@ -414,3 +417,4 @@ class TileBackgroundSdf implements SignedDistanceFunction {
     return -(x2 * x2) + 1;
   }
 }
+
