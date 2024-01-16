@@ -70,6 +70,10 @@ export class BottleSceneBuilder implements SceneBuilder {
     scene.addObject("Ceiling", ceil, roomMaterial);
     scene.addObject("Floor", floor, roomMaterial);
 
+    // shelf
+    const shelfSdf = new OffsetYSdf(-.25, new RoundedBox(11, .5, 6, 0.25));
+    scene.addObject("Shelf", shelfSdf, backgroundPlaneMaterial);
+
     // spherical light
     const lightPosition = new Vector(-40, 10.0, -80);
     const lightRadius = 10;
@@ -145,6 +149,22 @@ export class OffsetXSdf implements SignedDistanceFunction {
   constructor(private offset: number, private sdf: SignedDistanceFunction) {}
   distance(position: Vector): number {
     const offset = new Vector(position.x - this.offset, position.y, position.z);
+    return this.sdf.distance(offset);
+  }
+}
+
+export class OffsetYSdf implements SignedDistanceFunction {
+  constructor(private offset: number, private sdf: SignedDistanceFunction) {}
+  distance(position: Vector): number {
+    const offset = new Vector(position.x, position.y - this.offset, position.z);
+    return this.sdf.distance(offset);
+  }
+}
+
+export class OffsetZSdf implements SignedDistanceFunction {
+  constructor(private offset: number, private sdf: SignedDistanceFunction) {}
+  distance(position: Vector): number {
+    const offset = new Vector(position.x, position.y, position.z - this.offset);
     return this.sdf.distance(offset);
   }
 }
@@ -418,3 +438,28 @@ class TileBackgroundSdf implements SignedDistanceFunction {
   }
 }
 
+export class RoundedBox implements SignedDistanceFunction {
+  private corner: Vector;
+
+  constructor(
+    private width: number,
+    private height: number,
+    private depth: number,
+    private radius: number
+  ) {
+    this.corner = new Vector(
+      (width - 2 * this.radius) / 2,
+      (height - 2 * this.radius) / 2,
+      (depth - 2 * this.radius) / 2
+    );
+  }
+
+  distance(position: Vector): number {
+    const delta = position.abs().minus(this.corner);
+    return (
+      delta.clampNegatives().magnitude +
+      delta.clampPositives().maxComponent() -
+      this.radius
+    );
+  }
+}
