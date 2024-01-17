@@ -1,6 +1,6 @@
 import { Presenter } from "../application/Presenter";
 import { View } from "../application/View";
-import { BottleSceneBuilder } from "../domain/BottleSceneBuilder";
+import { BottleSceneBuilder } from "../domain/BottleScene/BottleSceneBuilder"
 import { Sensor, Camera } from "../domain/common/Abstractions";
 import { SdfVisualizer2d, Contours } from "../infrastructure/implementation";
 import { HtmlView } from "../infrastructure/HtmlView";
@@ -9,7 +9,6 @@ import { SdfNormalCalculation } from "../domain/common/sdf/SdfNormalCalculation"
 import { NormalsOnlyRayTracer } from "../domain/common/NormalsOnlyRayTracer";
 import { RayMarcher } from "../domain/common/RayMarcher";
 import { CanvasSensor } from "../infrastructure/CanvasSensor";
-import { StratifiedPixelSampler } from "../infrastructure/StratifiedPixelSampler";
 import { UnitSphereSurfaceSampler } from "../domain/common/sampling/UnitSphereSurfaceSampler";
 import { HemisphereSurfaceSampler } from "../domain/common/sampling/HemisphereSurfaceSampler";
 import { SimpleLightFactory } from "../domain/common/SceneDefinition/SimpleLightFactory";
@@ -82,7 +81,7 @@ export class Composer {
     const camera = this.createCamera();
     
     const pixelSampler = new RandomPixelSampler(
-      2048, // number of samples per pixel
+      32, // number of samples per pixel
       this.pathTracer,
       this.random,
       camera, 

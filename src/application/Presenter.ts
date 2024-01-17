@@ -1,11 +1,4 @@
 import {
-  BottleBodyProfileSdf,
-  BottleNeck,
-  BottleCapProfile,
-  BottleCapSpout as BottleCapSpout,
-  SdfXY,
-} from "../domain/BottleSceneBuilder";
-import {
   SceneBuilder,
   Sensor,
   SignedDistanceFunction2d,
@@ -13,12 +6,17 @@ import {
 import { Scene } from "../domain/common/SceneDefinition/Scene";
 import { UnionSdf2 } from "../domain/common/sdf/Sdf";
 import {
-  CellRenderedData,
+  CellRenderedData, 
   MultiCoreEvents,
 } from "../infrastructure/nulticore/CanvasSensorMultiCore";
 import { View } from "./View";
 import { BoundsEstimator } from "../domain/common/BoundsEstimtor";
 import { Vector2 } from "../domain/common/Vector2";
+import { BottleBodyProfileSdf } from "../domain/BottleScene/BottleBodyProfileSdf";
+import { BottleCapProfile } from "../domain/BottleScene/BottleCapProfile";
+import { BottleCapSpout } from "../domain/BottleScene/BottleCapSpout";
+import { BottleNeck } from "../domain/BottleScene/BottleNeck";
+import { SdfXY } from "../domain/BottleScene/SdfXY";
 
 export class Presenter implements MultiCoreEvents {
   private view: View;
