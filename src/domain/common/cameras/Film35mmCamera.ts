@@ -8,11 +8,11 @@ export class Film35mmCamera implements Camera {
   private readonly filmSizeMillimeters: Vector2;
   private readonly filmSizeInches: Vector2;
   private readonly sensorCenter: Vector2;
-  private pixels: Vector2;
-  private pixelsPerMillimeter: number;
-  private pixelsPerInch: number;
+  private pixels = new Vector2(0, 0);
+  private pixelsPerMillimeter = 0;
+  private pixelsPerInch = 0;
   private cameraBasis: OrthoBasis;
-  private sensor: Sensor;
+  private sensor!: Sensor;
   private sensorScale: number;
   private readonly focalLengthInches: number;
 
@@ -34,10 +34,11 @@ export class Film35mmCamera implements Camera {
 
   generateRay(x: number, y: number): Ray {
     const sensorPosition = new Vector(
-      (x - this.sensorCenter.x) * this.sensorScale, 
-      (y - this.sensorCenter.y) * this.sensorScale, 
-      this.focalLengthInches);
-    const direction = this.cameraBasis.project(sensorPosition).normalize();
+      (x - this.sensorCenter.x) * this.sensorScale,
+      (y - this.sensorCenter.y) * this.sensorScale,
+      this.focalLengthInches
+    );
+    const direction = this.cameraBasis.project(sensorPosition).normalize(); // .asFloat32();
     return new Ray(this.origin, direction);
   }
 

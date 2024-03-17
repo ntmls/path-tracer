@@ -13,25 +13,21 @@ export class NaivePathTracer implements RayTracer {
   private oneOverPi = 1 / Math.PI;
 
   constructor(
+    private scene: Scene,
     private rayMarcher: RayMarcher,
     private hemisphereSampler: HemisphereSurfaceSampler,
     private random: Random
   ) {}
 
-  traceRay(ray: Ray, scene: Scene): RgbColor {
-    return this.tracePath(ray, scene, 0, false);
+  traceRay(ray: Ray): RgbColor {
+    return this.tracePath(ray, 0, false);
   }
 
-  private tracePath(
-    ray: Ray,
-    scene: Scene,
-    depth: number,
-    wasSpecular: boolean
-  ): RgbColor {
-    const objectsInBounds = scene.objects.filter((x) => x.bounds.inBounds(ray));
-    const hitInfo = this.rayMarcher.marchRay(objectsInBounds, ray);
+  private tracePath(ray: Ray, depth: number, wasSpecular: boolean): RgbColor {
+    const scene = this.scene;
+    const hitInfo = this.rayMarcher.marchRay(ray);
     if (!(hitInfo.wasHit && hitInfo.hitObject)) {
-      return scene.backgroundColor;
+      return this.scene.backgroundColor;
     }
 
     // if it is a light return the light
@@ -72,7 +68,7 @@ export class NaivePathTracer implements RayTracer {
         throw new Error("Unexpected, wrong side of hemisphere.");
       }
       */
-    const incomingLight = this.tracePath(newRay, scene, depth + 1, false);
+    const incomingLight = this.tracePath(newRay, depth + 1, false);
     const brdf = material.albedo.divideScalar(Math.PI); // Energy conservation
     const indirect = incomingLight
       .multiply(brdf)
@@ -95,7 +91,7 @@ export class NaivePathTracer implements RayTracer {
     let direct: RgbColor;
     if (light) {
       const sample = light.sample(nextPosition);
-      const directResult = this.rayMarcher.marchRay(scene.objects, sample.ray);
+      const directResult = this.rayMarcher.marchRay(sample.ray);
       let directLightColor: RgbColor;
       if (
         // if we hit the light

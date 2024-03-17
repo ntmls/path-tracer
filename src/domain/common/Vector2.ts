@@ -1,7 +1,19 @@
 import { Vector } from "./Vector";
 
 export class Vector2 {
-  constructor(readonly x: number, readonly y: number) { }
+  constructor(readonly x: number, readonly y: number) {}
+  
+  /*
+  asFloat32(): Vector2 {
+    return new Vector2(Math.fround(this.x), Math.fround(this.y));
+  }
+  assertFloat32(): void {
+    const compare = this.asFloat32();
+    if (!this.equals(compare)) {
+      throw new Error("Expected this Vector2 to be float32 but found it is float64.")
+    }
+  }
+  */ 
   get magnitude(): number {
     return Math.sqrt(this.x * this.x + this.y * this.y);
   }
@@ -55,6 +67,6 @@ export class Vector2 {
     return true;
   }
   to3d(z: number) {
-    return new Vector(this.x, this.y, z); 
+    return new Vector(this.x, this.y, z);
   }
 }

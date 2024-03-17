@@ -6,20 +6,20 @@ import {
 import { Scene } from "../domain/common/SceneDefinition/Scene";
 import { UnionSdf2 } from "../domain/common/sdf/Sdf";
 import {
-  CellRenderedData, 
+  CellRenderedData,
   MultiCoreEvents,
 } from "../infrastructure/nulticore/CanvasSensorMultiCore";
 import { View } from "./View";
 import { BoundsEstimator } from "../domain/common/BoundsEstimtor";
 import { Vector2 } from "../domain/common/Vector2";
-import { BottleBodyProfileSdf } from "../domain/BottleScene/BottleBodyProfileSdf";
-import { BottleCapProfile } from "../domain/BottleScene/BottleCapProfile";
-import { BottleCapSpout } from "../domain/BottleScene/BottleCapSpout";
-import { BottleNeck } from "../domain/BottleScene/BottleNeck";
-import { SdfXY } from "../domain/BottleScene/SdfXY";
+import { BottleBodyProfileSdf } from "../domain/bottle-scene/BottleBodyProfileSdf";
+import { BottleCapProfile } from "../domain/bottle-scene/BottleCapProfile";
+import { BottleCapSpout } from "../domain/bottle-scene/BottleCapSpout";
+import { BottleNeck } from "../domain/bottle-scene/BottleNeck";
+import { SdfXY } from "../domain/bottle-scene/SdfXY";
 
 export class Presenter implements MultiCoreEvents {
-  private view: View;
+  private view: View | null = null;
   private profiles: ProfileViewModel[] = [];
   private scene: Scene;
 
@@ -59,33 +59,49 @@ export class Presenter implements MultiCoreEvents {
   }
 
   displayProfiles(): void {
-    this.view.hideComposition();
-    this.view.hideFinalRender();
-    this.view.populateProfileSelection(this.profiles.map((x) => x.name));
-    this.view.visualize2dSdf(this.profiles[0]);
-    this.view.showProfiles();
+    if (this.view) {
+      this.view.hideComposition();
+      this.view.hideFinalRender();
+      this.view.populateProfileSelection(this.profiles.map((x) => x.name));
+      this.view.visualize2dSdf(this.profiles[0]);
+      this.view.showProfiles();
+    } else {
+      throw new Error("View is not defined.");
+    }
   }
 
   displayComposition(): void {
-    this.view.hideProfiles();
-    this.view.hideFinalRender();
-    this.compositionSensor.takePicture(this.scene);
-    this.view.showComposition();
-    const sceneViewObjectsModel = this.buildSceneViewModel(this.scene);
-    this.view.displaySceneObjects(sceneViewObjectsModel);
+    if (this.view) {
+      this.view.hideProfiles();
+      this.view.hideFinalRender();
+      this.compositionSensor.takePicture(this.scene);
+      this.view.showComposition();
+      const sceneViewObjectsModel = this.buildSceneViewModel(this.scene);
+      this.view.displaySceneObjects(sceneViewObjectsModel);
+    } else {
+      throw new Error("View is not defined.");
+    }
   }
 
   displayFinalRender(): void {
-    this.view.hideProfiles();
-    this.view.hideComposition();
-    this.view.showFinalRender();
+    if (this.view) {
+      this.view.hideProfiles();
+      this.view.hideComposition();
+      this.view.showFinalRender();
+    } else {
+      throw new Error("View is not defined.");
+    }
   }
 
   selectProfile(name: string): void {
-    const profileViewModel = this.profiles.find((x) => x.name === name);
-    if (!profileViewModel)
-      throw new Error(`Profile with id '${name}' not found`);
-    this.view.visualize2dSdf(profileViewModel);
+    if (this.view) {
+      const profileViewModel = this.profiles.find((x) => x.name === name);
+      if (!profileViewModel)
+        throw new Error(`Profile with id '${name}' not found`);
+      this.view.visualize2dSdf(profileViewModel);
+    } else {
+      throw new Error("View is not defined.");
+    }
   }
 
   renderFinalImage(): void {
@@ -97,7 +113,11 @@ export class Presenter implements MultiCoreEvents {
   }
 
   cellRendered(data: CellRenderedData): void {
-    this.view.updateRenderStatistics(data);
+    if (this.view) {
+      this.view.updateRenderStatistics(data);
+    } else {
+      throw new Error("View is not defined.");
+    }
   }
 
   estimateBounds(item: sceneObjectViewModel): void {

@@ -16,13 +16,13 @@ export class SensorDto {
 }
 
 export class CellOutput {
-  cell: CellInput;
-  pixels: RgbDto[] = []
-  timeTaken: number;
+  cell!: CellInput;
+  pixels: RgbDto[] = [];
+  timeTaken = 0;
 }
 
 export class RgbDto {
-  r: number;
-  g: number; 
-  b: number
+  r: number = 0;
+  g: number = 0;
+  b: number = 0;
 }

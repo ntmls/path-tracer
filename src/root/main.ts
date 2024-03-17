@@ -1,7 +1,7 @@
-import { Composer } from "./Composer"
+import { Composer } from "./composer";
 const composer = new Composer();
 const presenter = composer.composePresenter();
 
 window.onload = () => {
-    presenter.initialize()
-}
+  presenter.initialize();
+};

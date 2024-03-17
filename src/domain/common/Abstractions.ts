@@ -33,7 +33,7 @@ export interface Random {
 }
 
 export interface RayTracer {
-  traceRay(ray: Ray, scene: Scene): RgbColor;
+  traceRay(ray: Ray): RgbColor;
 }
 
 export interface DirectLight {

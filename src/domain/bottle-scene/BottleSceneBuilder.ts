@@ -69,7 +69,7 @@ export class BottleSceneBuilder implements SceneBuilder {
     const right = new XPlaneSdf(62, 4);
     const left = new XPlaneSdf(-62, 4);
     const ceil = new YPlaneSdf(4 * 12 + 2, 4);
-    const floor = new YPlaneSdf(-54 * 12 + 2, 4);
+    const floor = new YPlaneSdf(-4 * 12 + 2, 4);
     scene.addObject("Plane behind camera", back, roomMaterial);
     scene.addObject("Plane left of camera", left, roomMaterial);
     scene.addObject("Plane right of camera", right, windowMaterial);

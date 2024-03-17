@@ -15,24 +15,25 @@ export class DirectLightPathTracer implements RayTracer {
   private oneOverPi = 1 / Math.PI;
 
   constructor(
+    private scene: Scene, 
     private rayMarcher: RayMarcher,
     private hemisphereSampler: HemisphereSurfaceSampler,
     private random: Random
   ) {}
 
-  traceRay(ray: Ray, scene: Scene): RgbColor {
-    return this.tracePath(ray, scene, 0, false);
+  traceRay(ray: Ray): RgbColor {
+    return this.tracePath(ray, 0, false);
   }
 
   private tracePath(
     ray: Ray,
-    scene: Scene,
     depth: number,
     containedSpecular: boolean,
     priorGlossAmount: number = 0
   ): RgbColor {
-    const objectsInBounds = scene.objects.filter((x) => x.bounds.inBounds(ray));
-    const hitInfo = this.rayMarcher.marchRay(objectsInBounds, ray);
+    const scene = this.scene;
+    // const objectsInBounds = scene.objects.filter((x) => x.bounds.inBounds(ray));
+    const hitInfo = this.rayMarcher.marchRay(ray);
     if (!(hitInfo.wasHit && hitInfo.hitObject)) {
       return scene.backgroundColor;
     }
@@ -90,7 +91,6 @@ export class DirectLightPathTracer implements RayTracer {
             ray,
             hitInfo,
             nextPosition,
-            scene,
             depth,
             probNewRay
           );
@@ -125,14 +125,13 @@ export class DirectLightPathTracer implements RayTracer {
     ray: Ray,
     hitInfo: RayMarchResult,
     nextPosition: Vector,
-    scene: Scene,
     depth: number,
     probNewRay: number
   ) {
     const reflectDirection = ray.direction.reflect(hitInfo.normal);
     const reflectRay = new Ray(nextPosition, reflectDirection);
     const brdf = new RgbColor(1, 1, 1).divideScalar(Math.PI);
-    const reflected = this.tracePath(reflectRay, scene, depth + 1, true, 0)
+    const reflected = this.tracePath(reflectRay, depth + 1, true, 0)
       .multiply(brdf)
       .divideScalar(probNewRay);
     return reflected;
@@ -158,8 +157,7 @@ export class DirectLightPathTracer implements RayTracer {
     const pdf = Functions.lerp(material.glossyAmount, this.hemispherePdf, 1);
     const blendedCos = Functions.lerp(material.glossyAmount, cos, 1);
     const reflected = this.tracePath(
-      reflectRay,
-      scene,
+      reflectRay, 
       depth + 1,
       true,
       material.glossyAmount
@@ -185,7 +183,7 @@ export class DirectLightPathTracer implements RayTracer {
     const newDirection = this.hemisphereSampler.sample(hitInfo.normal);
     const newRay = new Ray(nextPosition, newDirection);
     const cos = newRay.direction.dot(hitInfo.normal);
-    const bounce = this.tracePath(newRay, scene, depth + 1, false, 1);
+    const bounce = this.tracePath(newRay, depth + 1, false, 1);
     const multiplier =
       cos * (1 / (this.hemispherePdf * probNewRay)) * this.oneOverPi;
     const indirect = new RgbColor(
@@ -208,10 +206,7 @@ export class DirectLightPathTracer implements RayTracer {
     const light = scene.directLights[lightIndex];
     if (light) {
       const sample = light.sample(position);
-      const objectsInBounds = scene.objects.filter((x) =>
-        x.bounds.inBounds(sample.ray)
-      );
-      const rayResult = this.rayMarcher.marchRay(objectsInBounds, sample.ray);
+      const rayResult = this.rayMarcher.marchRay(sample.ray);
       if (
         // if we hit the light
         rayResult.wasHit &&

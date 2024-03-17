@@ -4,8 +4,8 @@ import { Ray } from "../Ray";
 
 
 export class FrontOrthoCamera implements Camera {
-  private halfWidth: number;
-  private halfHeight: number;
+  private halfWidth = 0;
+  private halfHeight = 0;
 
   constructor(
     private sensorWidth: number,

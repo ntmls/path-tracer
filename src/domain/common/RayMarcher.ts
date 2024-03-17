@@ -6,85 +6,92 @@ import {
 } from "../../infrastructure/implementation";
 import { SdfNormalCalculation } from "./sdf/SdfNormalCalculation";
 import { SceneObject } from "./SceneDefinition/SceneObject";
+import { Scene } from "./SceneDefinition/Scene";
+
+export interface IRayMarcherConfig {
+  get maxSteps(): number;
+  get minimumSurfaceDistance(): number;
+  get maximumDistance(): number;
+}
+
+export interface RayMarcherSettings {
+  get maxSteps(): number;
+  get surfaceDistance(): number;
+  get maxDistance(): number;
+}
 
 export class RayMarcher {
-  private emptyVector = new Vector(0, 0, 0);
   constructor(
-    private maxSteps = 1000,
+    private scene: Scene,
+    private settings: RayMarcherSettings,
     private normalCalculator: SdfNormalCalculation
   ) {}
 
-  marchRay(objects: readonly SceneObject[], ray: Ray): RayMarchResult {
-    const SURFACE_DISTANCE = 0.01;
-    const MAX_DISTANCE = 2000;
+  marchRay(ray: Ray): RayMarchResult {
+    const inBounds = this.scene.objects.filter((x) => x.bounds.inBounds(ray));
+    const inBoundsCount = inBounds.length;
+    const maxSteps = this.settings.maxSteps;
+    const surfaceDistance = this.settings.surfaceDistance;
+    const maxDistance = this.settings.maxDistance;
+
     let totalDistance = 0;
-    const objectCount = objects.length;
     let i = 0;
-    while (i < this.maxSteps) {
-      const closest = this.minimumDistance(objects, objectCount, ray);
-      totalDistance += closest.distance;
-      if (totalDistance < 0) {
-        throw new Error("Expected positive distance.");
+    let position = ray.origin;
+    const ox = ray.origin.x;
+    const oy = ray.origin.y;
+    const oz = ray.origin.z;
+    const dx = ray.direction.x;
+    const dy = ray.direction.y;
+    const dz = ray.direction.z;
+
+    while (i < maxSteps) {
+      const closest = this.findClosestObject(position, inBounds, inBoundsCount);
+      const closestDistance = closest[0];
+      const closestObject = closest[1];
+      totalDistance += closestDistance;
+
+      // hit
+      if (closestDistance < surfaceDistance) {
+        const normal = this.normalCalculator.calculate(
+          closestObject.sdf,
+          position
+        );
+        return new RayMarchResult(true, position, normal, closestObject);
       }
 
-      if (closest.distance < SURFACE_DISTANCE) {
-        // hit
-        const normal = this.normalCalculator.calculate(
-          closest.closestObject.sdf,
-          ray.origin
-        );
-        return new RayMarchResult(
-          true,
-          ray.origin,
-          normal,
-          closest.closestObject
-        );
-      } else if (totalDistance > MAX_DISTANCE) {
-        // miss
-        return new RayMarchResult(
-          false,
-          this.emptyVector,
-          this.emptyVector,
-          null
-        );
-      } else {
-        ray = ray.shift(closest.distance);
+      // miss
+      if (totalDistance > maxDistance) {
+        return new RayMarchResult(false, Vector.zero, Vector.zero, null);
       }
+
+      // keep going
+      position = new Vector(
+        ox + dx * totalDistance,
+        oy + dy * totalDistance,
+        oz + dz * totalDistance
+      );
       i++;
     }
-    return new RayMarchResult(false, this.emptyVector, this.emptyVector, null);
+    return new RayMarchResult(false, Vector.zero, Vector.zero, null);
   }
 
-  private minimumDistance(
-    objects: readonly SceneObject[],
-    objectCount: number,
-    ray: Ray
-  ): ClosestObject {
-    let first = true;
-    let minDistance = 0;
-    let minObject!: SceneObject;
-    let distance = 0;
-    minDistance = distance;
-    minObject = objects[0];
-    let i = 0;
-    while (i < objectCount) {
-      const obj = objects[i];
-      // This doesn't save enough distance checks to make the extra overhead worth it.
-      // if (obj.bounds.inBounds(ray)) {
-      distance = Math.max(obj.sdf.distance(ray.origin), 0); // do not allow negatives
-      if (first) {
+  private findClosestObject(
+    position: Vector,
+    inBounds: SceneObject[],
+    inBoundsCount: number
+  ): [number, SceneObject] {
+    let minDistance = Math.max(inBounds[0].sdf.distance(position), 0);
+    let minObject = inBounds[0];
+    let i = 1;
+    while (i < inBoundsCount) {
+      const obj = inBounds[i];
+      const distance = Math.max(obj.sdf.distance(position), 0); // do not allow negatives
+      if (distance < minDistance) {
         minDistance = distance;
         minObject = obj;
-        first = false;
-      } else {
-        if (distance < minDistance) {
-          minDistance = distance;
-          minObject = obj;
-        }
       }
-      // }
       i++;
     }
-    return new ClosestObject(minDistance, minObject);
+    return [minDistance, minObject];
   }
 }

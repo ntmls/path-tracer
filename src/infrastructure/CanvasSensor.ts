@@ -7,11 +7,16 @@ import {
 import { RgbColor } from "../domain/common/RgbColor";
 import { Scene } from "../domain/common/SceneDefinition/Scene";
 
+export interface RayTracerFactory {
+  createForScene(scene: Scene): RayTracer;
+}
+
 export class CanvasSensor implements Sensor {
   constructor(
     private canvas: HTMLCanvasElement,
     private camera: Camera,
-    private rayTracer: RayTracer,
+    // private rayTracer: RayTracer,
+    private rayTracerFactory: RayTracerFactory,
     private random: Random,
     private samplesPerPixel: number
   ) {}
@@ -22,6 +27,7 @@ export class CanvasSensor implements Sensor {
   }
 
   takePicture(scene: Scene): Promise<void> {
+    const rayTracer = this.rayTracerFactory.createForScene(scene)
     const width = this.canvas.width;
     const height = this.canvas.height;
     const context = this.canvas.getContext("2d");
@@ -33,7 +39,7 @@ export class CanvasSensor implements Sensor {
     let y = 0;
     for (var i = 0; i < length; i += 4) {
       let v = 0;
-      const color = this.samplePixel(x, y, scene);
+      const color = this.samplePixel(x, y, rayTracer);
       const correctedColor = this.correctGamma(color);
       imageData.data[i] = Math.floor(correctedColor.red * 255);
       imageData.data[i + 1] = Math.floor(correctedColor.green * 255);
@@ -49,14 +55,14 @@ export class CanvasSensor implements Sensor {
     return Promise.resolve();
   }
 
-  private samplePixel(x: number, y: number, scene: Scene) {
+  private samplePixel(x: number, y: number, rayTracer: RayTracer) {
     let sum = RgbColor.black;
     for (let j = 0; j < this.samplesPerPixel; j++) {
       const ray = this.camera.generateRay(
         this.random.between(x, x + 1),
         this.random.between(y, y + 1)
       );
-      const color = this.rayTracer.traceRay(ray, scene);
+      const color = rayTracer.traceRay(ray);
       sum = sum.add(color);
     }
     const averageColor = sum.divideScalar(this.samplesPerPixel);

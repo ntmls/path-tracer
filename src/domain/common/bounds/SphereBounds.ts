@@ -14,39 +14,39 @@ export class SphereBounds implements Bounds {
     this._centerY = center.y;
     this._centerZ = center.z;
   }
+
   inBounds(ray: Ray): boolean {
     const rayOrigin = ray.origin;
     const rayDirection = ray.direction;
 
+    const deltaX = this._centerX - rayOrigin.x;
+    const deltaY = this._centerY - rayOrigin.y;
+    const deltaZ = this._centerZ - rayOrigin.z;
+
+    const distanceFromOriginSquared =
+      deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ;
+
+    if (distanceFromOriginSquared <= this._radiusSquared) return true; // we are inside the sphere we might hit an object on our way out.
+
+    // const time = delta.dot(ray.direction);
     const time =
-      (this._centerX - rayOrigin.x) * rayDirection.x +
-      (this._centerY - rayOrigin.y) * rayDirection.y +
-      (this._centerZ - rayOrigin.z) * rayDirection.z;
+      deltaX * rayDirection.x +
+      deltaY * rayDirection.y +
+      deltaZ * rayDirection.z;
 
-    const projected = new Vector(
-      rayDirection.x * time + rayOrigin.x,
-      rayDirection.y * time + rayOrigin.y,
-      rayDirection.z * time + rayOrigin.z
-    );
+    if (time < 0) return false; // we are not inside the spehre and the sphere is behind us.
 
-    const distanceSquared = projected.distanceSquaredFrom(this.center);
+    const toCenterX = rayDirection.x * time - deltaX;
+    const toCenterY = rayDirection.y * time - deltaY;
+    const toCenterZ = rayDirection.z * time - deltaZ;
+
+    const distanceSquared =
+      toCenterX * toCenterX + toCenterY * toCenterY + toCenterZ * toCenterZ;
+
     if (distanceSquared > this._radiusSquared) {
-      return false; // sphere does not intersect the line at all
+      return false; // Sphere does not intersect the ray at all. Ray will missed it entirely.
     } else {
-      if (time > 0) {
-        // We know that at least one of the intersections is in front of the origion.
-        return true;
-      } else {
-        // the center of the intersection is behind the origion. We need to check if an actual intersection could be in frond of the origin.
-        const halfIntersectionLengthSqr = this._radiusSquared - distanceSquared;
-        const distFromOrigionToProjectedSqr =
-          rayOrigin.distanceSquaredFrom(projected);
-        if (distFromOrigionToProjectedSqr > halfIntersectionLengthSqr) {
-          return true; // an intersection could be in front of the origion.
-        } else {
-          return false; // he spehre is far enough behind the origion that we know the ray does not
-        }
-      }
+      return true;
     }
   }
 }

@@ -2,6 +2,23 @@ import { Vector2 } from "./Vector2";
 
 export class Vector {
   constructor(readonly x: number, readonly y: number, readonly z: number) {}
+  /*
+  asFloat32() {
+    return new Vector(
+      Math.fround(this.x),
+      Math.fround(this.y),
+      Math.fround(this.z)
+    );
+  }
+  assertFloat32(): void {
+    const compare = this.asFloat32();
+    if (!this.equals(compare)) {
+      throw new Error(
+        "Expected this Vector3 to be float32 but found it is float64."
+      );
+    }
+  }
+  */
   get magnitude(): number {
     return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
   }
@@ -91,4 +108,6 @@ export class Vector {
     if (this.z !== other.z) return false;
     return true;
   }
+
+  static zero = new Vector(0, 0, 0);
 }

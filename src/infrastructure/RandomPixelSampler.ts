@@ -16,14 +16,14 @@ export class RandomPixelSampler implements PixelSampler {
     readonly clampThreshold: number
   ) { }
 
-  samplePixel(x: number, y: number, scene: Scene): RgbColor {
+  samplePixel(x: number, y: number): RgbColor {
     let sum = RgbColor.black;
     for (let j = 0; j < this.samplesPerPixel; j++) {
       const ray = this.camera.generateRay(
         this.random.between(x, x + 1),
         this.random.between(y, y + 1)
       );
-      const color = this.rayTracer.traceRay(ray, scene);
+      const color = this.rayTracer.traceRay(ray);
       sum = sum.add(color.clampAll(this.clampThreshold));
     }
     const averageColor = sum.divideScalar(this.samplesPerPixel);

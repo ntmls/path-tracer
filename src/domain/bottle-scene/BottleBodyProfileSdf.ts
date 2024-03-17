@@ -17,32 +17,49 @@ export class BottleBodyProfileSdf implements SignedDistanceFunction2d {
   private h4 = this.h3 + this.l3;
 
   distance(position: Vector2): number {
-    position = new Vector2(Math.abs(position.x), position.y);
-    if (position.y < this.h2) {
-      if (position.x < this.baseRadius) {
-        return this.h1 - position.y;
+    // position = new Vector2(Math.abs(position.x), position.y);
+    const px = Math.abs(position.x);
+    const py = position.y;
+    if (py < this.h2) {
+      if (px < this.baseRadius) {
+        return this.h1 - py;
       } else {
-        const tempx = position.x - this.baseRadius;
-        const tempy = this.h2 - position.y;
+        const tempx = px - this.baseRadius;
+        const tempy = this.h2 - py;
         return Math.sqrt(tempx * tempx + tempy * tempy) - this.l1;
       }
     }
-    if (position.y < this.h3) {
-      if (position.x > this.bottleRadius) {
-        return position.x - this.bottleRadius;
+    if (py < this.h3) {
+      if (px > this.bottleRadius) {
+        return px - this.bottleRadius;
       } else {
-        const a = position.x - this.bottleRadius;
-        const b = this.h1 - position.y;
-        const c = position.y - this.h4;
-        return Math.max(Math.max(a, b), c);
+        const a = px - this.bottleRadius;
+        const b = this.h1 - py;
+        const c = py - this.h4;
+        return this.max3(a, b, c);
       }
     }
-    if (position.x < this.neckRadius) {
-      return position.y - this.h4;
+    if (px < this.neckRadius) {
+      return py - this.h4;
     } else {
-      const tempx = position.x - this.neckRadius;
-      const tempy = position.y - this.h3;
+      const tempx = px - this.neckRadius;
+      const tempy = py - this.h3;
       return Math.sqrt(tempx * tempx + tempy * tempy) - this.l3;
+    }
+  }
+  max3(a: number, b: number, c: number): number {
+    if (a > b) {
+      if (a > c) {
+        return a;
+      } else {
+        return c;
+      }
+    } else {
+      if (b > c) {
+        return b;
+      }  else {
+        return c
+      }
     }
   }
 }

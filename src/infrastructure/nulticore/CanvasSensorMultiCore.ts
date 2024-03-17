@@ -12,14 +12,18 @@ export class CanvasSensorMultiCore implements Sensor {
   constructor(
     private canvas: HTMLCanvasElement,
     private camera: Camera,
-    private rayTracer: RayTracer,
+    // private rayTracer: RayTracer,
     private random: Random
   ) {}
 
   // need to inject via property rather than constructor.
-  private _events: MultiCoreEvents;
+  private _events: MultiCoreEvents | null = null;
   set events(value: MultiCoreEvents) {
     this._events = value;
+  }
+  get events(): MultiCoreEvents {
+    if (!this._events) throw new Error("events has not been set.")
+    return this._events;
   }
 
   setSize(width: number, height: number): void {
@@ -91,7 +95,7 @@ export class CanvasSensorMultiCore implements Sensor {
           );
 
           const data = this.mapStatiticsToData();
-          this._events.cellRendered(data);
+          this.events.cellRendered(data);
 
           this.copyCellDataToImage(e.data);
           inProgress.shift(); // remove from the inprogress stack

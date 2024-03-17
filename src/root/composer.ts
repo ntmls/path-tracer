@@ -1,38 +1,60 @@
 import { Presenter } from "../application/Presenter";
 import { View } from "../application/View";
-import { BottleSceneBuilder } from "../domain/BottleScene/BottleSceneBuilder"
 import { Sensor, Camera } from "../domain/common/Abstractions";
 import { SdfVisualizer2d, Contours } from "../infrastructure/implementation";
 import { HtmlView } from "../infrastructure/HtmlView";
 import { MathRandom } from "../infrastructure/MathRandom";
 import { SdfNormalCalculation } from "../domain/common/sdf/SdfNormalCalculation";
-import { NormalsOnlyRayTracer } from "../domain/common/NormalsOnlyRayTracer";
-import { RayMarcher } from "../domain/common/RayMarcher";
 import { CanvasSensor } from "../infrastructure/CanvasSensor";
 import { UnitSphereSurfaceSampler } from "../domain/common/sampling/UnitSphereSurfaceSampler";
 import { HemisphereSurfaceSampler } from "../domain/common/sampling/HemisphereSurfaceSampler";
 import { SimpleLightFactory } from "../domain/common/SceneDefinition/SimpleLightFactory";
-import { DirectLightPathTracer } from "../domain/common/DirectLightPathTracer";
-import { Film35mmCamera } from "../domain/common/cameras/film35mmCamera";
+import { Film35mmCamera } from "../domain/common/cameras/Film35mmCamera";
 import { CanvasSensorMultiCore } from "../infrastructure/nulticore/CanvasSensorMultiCore";
 import { Vector } from "../domain/common/Vector";
-import { RandomPixelSampler } from "../infrastructure/RandomPixelSampler";
 import { CellSensor } from "../infrastructure/nulticore/CellSensor";
-import { Slave } from "../infrastructure/nulticore/Slave"
+import { Slave } from "../infrastructure/nulticore/Slave";
+import { BottleSceneBuilder } from "../domain/bottle-scene/BottleSceneBuilder";
+import { HtmlPanel, Panel, WorkerPanel } from "../infrastructure/Panel";
+import { RandomPixelSamplerFactory } from "../infrastructure/RandomPixelSamplerFactory";
+import { NormalsOnlyRayTracerFactory } from "../domain/common/NormalsOnlyRayTracerFactory";
+import { DirectLightPathTracerFactory } from "../domain/common/DirectLightPathTracerFactory";
+import { RayMarcherFactory } from "../domain/common/RayMarcherFactory";
+import { DefaultRayMaregerFactory } from "../domain/common/DefaultRayMaregerFactory";
 
 export class Composer {
   private random = new MathRandom();
   private normalCalculation = new SdfNormalCalculation(0.001);
-  private rayMarcher = new RayMarcher(1000, this.normalCalculation);
-  private normalsRayTracer = new NormalsOnlyRayTracer(this.rayMarcher);
+  private rayMarcherFactory: RayMarcherFactory = new DefaultRayMaregerFactory(
+    {
+      maxDistance: 150.0,
+      maxSteps: 1000,
+      surfaceDistance: 0.01,
+    },
+    this.normalCalculation
+  );
+  private normalsRayTracerFactory = new NormalsOnlyRayTracerFactory(
+    this.rayMarcherFactory
+  );
   private sphereSamples = new UnitSphereSurfaceSampler(this.random);
   private hemiSphereSampler = new HemisphereSurfaceSampler(this.sphereSamples);
-  private pathTracer = new DirectLightPathTracer(
-    this.rayMarcher,
+  private pathTracerFactory = new DirectLightPathTracerFactory(
+    this.rayMarcherFactory,
     this.hemiSphereSampler,
     this.random
   );
   private lightFactory = new SimpleLightFactory(this.sphereSamples);
+  private panel: Panel;
+
+  constructor() {
+    if (globalThis.document) {
+      const htmlPanel = new HtmlPanel();
+      htmlPanel.initialize();
+      this.panel = htmlPanel;
+    } else {
+      this.panel = new WorkerPanel();
+    }
+  }
 
   composePresenter(): Presenter {
     const sensor = this.composeFinalRenderSensor();
@@ -58,7 +80,7 @@ export class Composer {
     const sensor = new CanvasSensor(
       canvas,
       camera,
-      this.normalsRayTracer,
+      this.normalsRayTracerFactory,
       this.random,
       1
     );
@@ -71,7 +93,7 @@ export class Composer {
     const sensor = new CanvasSensorMultiCore(
       canvas,
       camera,
-      this.pathTracer,
+      // this.pathTracerFactory,
       this.random
     );
     camera.initializeSensor(sensor);
@@ -79,28 +101,17 @@ export class Composer {
   }
   composeSlave(): Slave {
     const camera = this.createCamera();
-    
-    const pixelSampler = new RandomPixelSampler(
+
+    const pixelSamplerFactory = new RandomPixelSamplerFactory(
       32, // number of samples per pixel
-      this.pathTracer,
       this.random,
-      camera, 
-      30.0 // clamp threshold
+      camera,
+      30.0 // clamp threshol
     );
-  
-    /*
-    const pixelSampler = new StratifiedPixelSampler(
-      8, // sub sample pattern8x8 = 64 subsamples
-      this.pathTracer,
-      this.random,
-      camera, 
-      30.0 // clamp threshold
-    );
-    */
-  
+
     return new Slave(
       camera,
-      new CellSensor(pixelSampler),
+      new CellSensor(pixelSamplerFactory, this.pathTracerFactory),
       this.composeBottleSceneBuilder()
     );
   }
@@ -122,3 +133,5 @@ export class Composer {
     return new Film35mmCamera(origin, lookAt, new Vector(0, 1, 0), 0.5, 100);
   }
 }
+
+

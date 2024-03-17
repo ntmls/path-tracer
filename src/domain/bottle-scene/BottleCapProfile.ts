@@ -38,6 +38,9 @@ export class BottleCapProfile implements SignedDistanceFunction2d {
 
     current = current.moveRight(0.4);
     this.polygon.add(current);
+
+    this.polygon.preCompute();
+    
   }
 
   distance(position: Vector2): number {

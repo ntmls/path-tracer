@@ -4,27 +4,23 @@ import { Vector2 } from "./Vector2";
 export class Polygon {
   private points: Vector2[] = [];
   private segments: PolySegment[] = [];
-  private segmentsNeedRecompute = true;
+  private segmentsComputed = false;
   private _pointCount: number = 0;
+  private tinyAmount = 0.00001;
 
   get count(): number {
     return this._pointCount;
   }
   add(point: Vector2) {
     this.points.push(point);
-    this.segmentsNeedRecompute = true;
+    this.segmentsComputed = false;
     this._pointCount++;
   }
   pointAt(index: number): Vector2 {
     return this.points[index];
   }
-  segmentAt(index: number): PolySegment {
-    if (this.segmentsNeedRecompute) {
-      this.recomputeSegments();
-    }
-    return this.segments[index];
-  }
-  private recomputeSegments() {
+
+  public preCompute() {
     this.segments = [];
     for (let i = 0; i < this._pointCount; i++) {
       const start = this.points[i];
@@ -42,18 +38,23 @@ export class Polygon {
       }
       this.segments.push(new PolySegment(previous, start, end));
     }
-    this.segmentsNeedRecompute = false;
+    // this.assertFloat32();
+    this.segmentsComputed = true;
   }
 
   distance(position: Vector2): number {
+    if (!this.segmentsComputed) {
+      throw new Error("preCompute() must be called before accessing segments.");
+    }
     let intersectEven = true;
-    let segment = this.segmentAt(0);
+    let segment = this.segments[0];
     let distanceSquared = segment.distanceSquared(position);
     let minSquared = distanceSquared;
     intersectEven = this.isIntersecionsEven(position, segment, intersectEven);
+
     let i = 1;
     while (i < this._pointCount) {
-      segment = this.segmentAt(i);
+      segment = this.segments[i];
       distanceSquared = segment.distanceSquared(position);
       if (distanceSquared < minSquared) {
         minSquared = distanceSquared;
@@ -61,6 +62,7 @@ export class Polygon {
       intersectEven = this.isIntersecionsEven(position, segment, intersectEven);
       i++;
     }
+
     const dist = Math.sqrt(minSquared);
     if (intersectEven) {
       return dist;
@@ -69,6 +71,46 @@ export class Polygon {
     }
   }
 
+  /*
+  asFloat32() {
+    const newPoints: Vector2[] = [];
+    for (const point of this.points) {
+      const newPoint = point.asFloat32();
+      newPoints.push(newPoint);
+    }
+    this.points = newPoints;
+    this.segmentsComputed = false; // Segments need to be recomputed.
+  }
+  */
+
+  /*
+  assertFloat32(): void {
+    for (const point of this.points) {
+      point.assertFloat32();
+    }
+    for (const segment of this.segments) {
+      segment.previous.assertFloat32();
+      segment.start.assertFloat32();
+      segment.end.assertFloat32();
+      if (segment.length !== Math.fround(segment.length)) {
+        throw new Error(
+          "Expected segment length to be float32 but was float64 instead."
+        );
+      }
+      if (segment.inverseLength !== Math.fround(segment.inverseLength)) {
+        throw new Error(
+          "Expected segment inverseLength to be float32 but was float64 instead."
+        );
+      }
+      if (segment.inverseVectorY !== Math.fround(segment.inverseVectorY)) {
+        throw new Error(
+          "Expected segment inverseVectorY to be float32 but was float64 instead."
+        );
+      }
+    }
+  }
+  */
+
   private isIntersecionsEven(
     position: Vector2,
     segment: PolySegment,
@@ -76,7 +118,7 @@ export class Polygon {
   ) {
     let modPosition = position;
     if (position.y === segment.start.y || position.y === segment.end.y) {
-      modPosition = new Vector2(position.x, position.y + 0.00001);
+      modPosition = new Vector2(position.x, position.y + this.tinyAmount);
     }
     if (Functions.between(modPosition.y, segment.start.y, segment.end.y)) {
       const dy = modPosition.y - segment.start.y;
@@ -92,7 +134,7 @@ export class Polygon {
 
 export class PolySegment {
   readonly vector: Vector2;
-  readonly vectorNormal: Vector2;
+  readonly vectorNormalTimesInvLengh: Vector2;
   readonly length: number;
   readonly inverseLength: number;
   readonly inverseVectorY: number;
@@ -103,7 +145,6 @@ export class PolySegment {
     readonly end: Vector2
   ) {
     this.vector = this.end.minus(this.start);
-    this.vectorNormal = this.vector.normalize();
     this.length = this.vector.magnitude;
     if (this.length > 0) {
       this.inverseLength = 1 / this.length;
@@ -115,6 +156,9 @@ export class PolySegment {
     } else {
       this.inverseVectorY = 0;
     }
+    this.vectorNormalTimesInvLengh = this.vector
+      .normalize()
+      .scale(this.inverseLength);
   }
 
   distanceSquared(position: Vector2): number {
@@ -125,13 +169,19 @@ export class PolySegment {
   }
 
   private getTime(position: Vector2) {
-    const dx = position.x - this.start.x;
-    const dy = position.y - this.start.y;
+    const delta = position.minus(this.start);
     const time =
-      (dx * this.vectorNormal.x + dy * this.vectorNormal.y) *
-      this.inverseLength;
+      delta.x * this.vectorNormalTimesInvLengh.x +
+      delta.y * this.vectorNormalTimesInvLengh.y;
     if (time < 0) return 0;
     if (time > 1) return 1;
     return time;
   }
+
+  /*
+  private assertFloat32(value: number): void {
+    if (value !== Math.fround(value))
+      throw new Error("Expected float32 but got float64 instead.");
+  }
+  */
 }
