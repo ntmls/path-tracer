@@ -47,19 +47,10 @@ export class BottleBodyProfileSdf implements SignedDistanceFunction2d {
       return Math.sqrt(tempx * tempx + tempy * tempy) - this.l3;
     }
   }
+
   max3(a: number, b: number, c: number): number {
-    if (a > b) {
-      if (a > c) {
-        return a;
-      } else {
-        return c;
-      }
-    } else {
-      if (b > c) {
-        return b;
-      }  else {
-        return c
-      }
-    }
+    const max1 = a > b ? a : b;
+    const max2 = max1 > c ? max1 : c;
+    return max2;
   }
 }

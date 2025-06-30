@@ -34,7 +34,7 @@ export class SphereBounds implements Bounds {
       deltaY * rayDirection.y +
       deltaZ * rayDirection.z;
 
-    if (time < 0) return false; // we are not inside the spehre and the sphere is behind us.
+    if (time < 0) return false; // we are not inside the sphere and the sphere is behind us.
 
     const toCenterX = rayDirection.x * time - deltaX;
     const toCenterY = rayDirection.y * time - deltaY;
