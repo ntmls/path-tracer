@@ -13,7 +13,7 @@ export class BottleNeck implements SignedDistanceFunction2d {
         const b = xMin - px;
         const c = py - yMax;
         const d = yMin - py;
-        return Math.max(Math.max(a, b), Math.max(c, d));
+        return Math.max(a, b, c, d)
       }
     }
 

@@ -11,11 +11,13 @@ export class Polygon {
   get count(): number {
     return this._pointCount;
   }
+
   add(point: Vector2) {
     this.points.push(point);
     this.segmentsComputed = false;
     this._pointCount++;
   }
+
   pointAt(index: number): Vector2 {
     return this.points[index];
   }
@@ -46,21 +48,20 @@ export class Polygon {
     if (!this.segmentsComputed) {
       throw new Error("preCompute() must be called before accessing segments.");
     }
-    const position = new Vector2(px, py);
     let intersectEven = true;
     let segment = this.segments[0];
-    let distanceSquared = segment.distanceSquared(position);
+    let distanceSquared = segment.distanceSquared(px, py);
     let minSquared = distanceSquared;
-    intersectEven = this.isIntersecionsEven(position, segment, intersectEven);
+    intersectEven = this.isIntersectionsEven(px, py, segment, intersectEven);
 
     let i = 1;
     while (i < this._pointCount) {
       segment = this.segments[i];
-      distanceSquared = segment.distanceSquared(position);
+      distanceSquared = segment.distanceSquared(px, py);
       if (distanceSquared < minSquared) {
         minSquared = distanceSquared;
       }
-      intersectEven = this.isIntersecionsEven(position, segment, intersectEven);
+      intersectEven = this.isIntersectionsEven(px, py, segment, intersectEven);
       i++;
     }
 
@@ -112,20 +113,23 @@ export class Polygon {
   }
   */
 
-  private isIntersecionsEven(
-    position: Vector2,
+  private isIntersectionsEven(
+    px: number, 
+    py: number,
     segment: PolySegment,
     intersectEven: boolean
   ) {
-    let modPosition = position;
-    if (position.y === segment.start.y || position.y === segment.end.y) {
-      modPosition = new Vector2(position.x, position.y + this.tinyAmount);
+    let modPositionX = px;
+    let modPositionY = py;
+    if (py === segment.start.y || py === segment.end.y) {
+      modPositionX = px;
+      modPositionY =  py + this.tinyAmount;
     }
-    if (Functions.between(modPosition.y, segment.start.y, segment.end.y)) {
-      const dy = modPosition.y - segment.start.y;
+    if (Functions.between(modPositionY, segment.start.y, segment.end.y)) {
+      const dy = modPositionY - segment.start.y;
       const t = dy * segment.inverseVectorY; // / segment.vector.y;
       const xIntersect = segment.start.x + segment.vector.x * t;
-      if (xIntersect > modPosition.x) {
+      if (xIntersect > modPositionX) {
         intersectEven = !intersectEven;
       }
     }
@@ -162,18 +166,19 @@ export class PolySegment {
       .scale(this.inverseLength);
   }
 
-  distanceSquared(position: Vector2): number {
-    const time = this.getTime(position);
-    const px = position.x - (this.vector.x * time + this.start.x);
-    const py = position.y - (this.vector.y * time + this.start.y);
-    return px * px + py * py;
+  distanceSquared(px: number, py: number): number {
+    const time = this.getTime(px, py);
+    const localX = px - (this.vector.x * time + this.start.x);
+    const localY = py - (this.vector.y * time + this.start.y);
+    return localX * localX + localY * localY;
   }
 
-  private getTime(position: Vector2) {
-    const delta = position.minus(this.start);
+  private getTime(px: number, py: number): number {
+    const deltaX = px - this.start.x;
+    const deltaY = py - this.start.y;
     const time =
-      delta.x * this.vectorNormalTimesInvLengh.x +
-      delta.y * this.vectorNormalTimesInvLengh.y;
+      deltaX * this.vectorNormalTimesInvLengh.x +
+      deltaY * this.vectorNormalTimesInvLengh.y;
     if (time < 0) return 0;
     if (time > 1) return 1;
     return time;
