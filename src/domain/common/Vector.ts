@@ -37,20 +37,6 @@ export class Vector {
   abs(): Vector {
     return new Vector(Math.abs(this.x), Math.abs(this.y), Math.abs(this.z));
   }
-  clampNegatives() {
-    return new Vector(
-      Math.max(0, this.x),
-      Math.max(0, this.y),
-      Math.max(0, this.z)
-    );
-  }
-  clampPositives() {
-    return new Vector(
-      Math.min(0, this.x),
-      Math.min(0, this.y),
-      Math.min(0, this.z)
-    );
-  }
   maxComponent(): number {
     return Math.max(Math.max(this.x, this.y), this.z);
   }

@@ -16,7 +16,6 @@ export class BottleBodyProfileSdf implements SignedDistanceFunction2d {
   private h4 = this.h3 + this.l3;
 
   distance(px: number, py: number): number {
-    // position = new Vector2(Math.abs(position.x), position.y);
     const localX = Math.abs(px);
     if (py < this.h2) {
       if (localX < this.baseRadius) {

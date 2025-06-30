@@ -15,10 +15,10 @@ export class BottleCapSpout implements SignedDistanceFunction {
     this.pill1 = new Pill(p1, p2);
     this.pill2 = new Pill(p2, p3);
   }
-  distance(px: number, py: number, pz:  number): number {
-    const position = new Vector(px, py, pz);
-    const dist1 = this.pill1.distanceSquared(position);
-    const dist2 = this.pill2.distanceSquared(position);
+
+  distance(px: number, py: number, pz: number): number {
+    const dist1 = this.pill1.distanceSquared(px, py, pz);
+    const dist2 = this.pill2.distanceSquared(px, py, pz);
     const dist = Math.sqrt(Math.min(dist1, dist2));
     return this.shell(dist, 0.05, 0.025);
   }
@@ -27,17 +27,6 @@ export class BottleCapSpout implements SignedDistanceFunction {
     return Math.abs(value - radius1) - radius2;
   }
 
-  /*
-  distance(position: Vector2): number {
-    const center = new Vector2(1, 1);
-    const up = new Vector2(0, 1);
-    const vect = position.minus(center).normalize();
-    const x = up.dot(vect); // cos
-    const y = position.distanceFrom(center) - 1;
-    const newPosition = new Vector2(x, Math.abs(y));
-    return this.tubeProfile(newPosition);
-  }
-  */
   private tubeProfile(position: Vector2): number {
     // handle inside
     if (

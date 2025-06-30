@@ -1,3 +1,4 @@
+import { Functions } from "../common/Functions";
 import { Vector } from "../common/Vector";
 
 export class Pill {
@@ -11,16 +12,33 @@ export class Pill {
     this.vect1mag = this.vect1.magnitude;
   }
 
-  distanceSquared(position: Vector) {
-    const vect2 = position.minus(this.start);
-    let time = this.vect1Norm.dot(vect2);
+  distanceSquared(px: number, py: number, pz: number) {
+    const deltaX = px - this.start.x;
+    const deltaY = py - this.start.y;
+    const deltaZ = pz - this.start.z;
+
+    // let time = this.vect1Norm.dot(delta);
+    let time =
+      this.vect1Norm.x * deltaX +
+      this.vect1Norm.y * deltaY +
+      this.vect1Norm.z * deltaZ;
     if (time < 0) {
       time = 0;
     }
     if (time > this.vect1mag) {
       time = this.vect1mag;
     }
-    const ref = this.vect1Norm.scale(time);
-    return ref.distanceSquaredFrom(vect2);
+    const refX = this.vect1Norm.x * time;
+    const refY = this.vect1Norm.y * time;
+    const refZ = this.vect1Norm.z * time;
+
+    return Functions.distanceSquared3(
+      refX,
+      refY,
+      refZ,
+      deltaX,
+      deltaY,
+      deltaZ
+    );
   }
 }

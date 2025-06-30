@@ -18,12 +18,21 @@ export class RoundedBox implements SignedDistanceFunction {
   }
 
   distance(px: number, py: number, pz: number): number {
-    const position = new Vector(px, py, pz);
-    const delta = position.abs().minus(this.corner);
+    const deltaX = Math.abs(px) - this.corner.x;
+    const deltaY = Math.abs(py) - this.corner.y;
+    const deltaZ = Math.abs(pz) - this.corner.z;
+
+    const clampedX = Math.max(deltaX, 0);
+    const clampedY = Math.max(deltaY, 0);
+    const clampedZ = Math.max(deltaZ, 0);
+
+    const innerDistance = Math.min(Math.max(deltaX, deltaY, deltaZ), 0);
+    if (innerDistance < 0) return innerDistance - this.radius;
+
     return (
-      delta.clampNegatives().magnitude +
-      delta.clampPositives().maxComponent() -
-      this.radius
+      Math.sqrt(
+        clampedX * clampedX + clampedY * clampedY + clampedZ * clampedZ
+      ) - this.radius
     );
   }
 }
