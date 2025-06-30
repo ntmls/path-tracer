@@ -162,8 +162,8 @@ export class sceneObjectViewModel {
 
 export class TileDisplacement implements SignedDistanceFunction2d {
   private _size = 2.5;
-  distance(position: Vector2): number {
-    return position.y - this.saw(this._size, position.x);
+  distance(px: number, py: number): number {
+    return py - this.saw(this._size, px);
   }
   private saw(size: number, x: number): number {
     const slope = x / size;

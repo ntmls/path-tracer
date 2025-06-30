@@ -10,8 +10,8 @@ export class UnionSdf2 implements SignedDistanceFunction2d {
     private sdf1: SignedDistanceFunction2d,
     private sdf2: SignedDistanceFunction2d
   ) {}
-  distance(position: Vector2): number {
-    return Math.min(this.sdf1.distance(position), this.sdf2.distance(position));
+  distance(px: number, py: number): number {
+    return Math.min(this.sdf1.distance(px, py), this.sdf2.distance(px, py));
   }
 }
 
@@ -21,8 +21,8 @@ export class XPlaneSdf implements SignedDistanceFunction {
     this.halfThickness = thickness / 2;
   }
 
-  distance(position: Vector): number {
-    return Math.abs(position.x - this.x) - this.halfThickness;
+  distance(px: number, py: number, pz: number): number {
+    return Math.abs(px - this.x) - this.halfThickness;
   }
 }
 
@@ -32,8 +32,8 @@ export class YPlaneSdf implements SignedDistanceFunction {
     this.halfThickness = thickness / 2;
   }
 
-  distance(position: Vector): number {
-    return Math.abs(position.y - this.y) - this.halfThickness;
+  distance(px: number, py: number, pz: number): number {
+    return Math.abs(py - this.y) - this.halfThickness;
   }
 }
 
@@ -43,24 +43,24 @@ export class ZPlaneSdf implements SignedDistanceFunction {
     this.halfThickness = thickness / 2;
   }
 
-  distance(position: Vector): number {
-    return Math.abs(position.z - this.z) - this.halfThickness;
+  distance(px: number, py: number, pz: number): number {
+    return Math.abs(pz - this.z) - this.halfThickness;
   }
 }
 
 export class RevolutionSdf implements SignedDistanceFunction {
   constructor(private profile: SignedDistanceFunction2d) {}
 
-  distance(position: Vector): number {
-    const v2d = new Vector2(position.xz.magnitude, position.y);
-    return this.profile.distance(v2d);
+  distance(px: number, py: number, pz: number): number {
+    const xzMagnitude = Math.sqrt(px * px + pz * pz);
+    return this.profile.distance(xzMagnitude, py);
   }
 }
 
 class InsideOffsetSdf2e implements SignedDistanceFunction2d {
   constructor(private sdf: SignedDistanceFunction2d, private offset: number) {}
-  distance(position: Vector2): number {
-    const a = this.sdf.distance(position);
+  distance(px: number, py: number): number {
+    const a = this.sdf.distance(px, py);
     const b = -a - this.offset;
     return Math.max(a, b);
   }

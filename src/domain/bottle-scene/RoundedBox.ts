@@ -17,7 +17,8 @@ export class RoundedBox implements SignedDistanceFunction {
     );
   }
 
-  distance(position: Vector): number {
+  distance(px: number, py: number, pz: number): number {
+    const position = new Vector(px, py, pz);
     const delta = position.abs().minus(this.corner);
     return (
       delta.clampNegatives().magnitude +

@@ -5,7 +5,7 @@ export class FastEstimateSdf implements SignedDistanceFunction {
   constructor(
     private readonly estimate: SignedDistanceFunction,
     private readonly exact: SignedDistanceFunction, 
-    private threshold: number = 0.01;
+    private threshold: number = 0.01
   ) {}
   
   /**
@@ -13,10 +13,10 @@ export class FastEstimateSdf implements SignedDistanceFunction {
    * If the estimate is less than threshold, it returns the exact distance.
    * Otherwise, it returns the estimate.
    */
-  distance(position: Vector): number {
-    const estimatedDistance = this.estimate.distance(position);
+  distance(px: number, py: number, pz: number): number {
+    const estimatedDistance = this.estimate.distance(px, py, pz);
     if (estimatedDistance < this.threshold) {
-        return this.exact.distance(position);
+        return this.exact.distance(px, py, pz);
     }
     return estimatedDistance;
   }

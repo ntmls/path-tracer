@@ -43,7 +43,7 @@ export class BottleCapProfile implements SignedDistanceFunction2d {
     
   }
 
-  distance(position: Vector2): number {
-    return this.polygon.distance(position);
+  distance(px: number, py: number): number {
+    return this.polygon.distance(px, py);
   }
 }

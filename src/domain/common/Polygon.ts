@@ -42,10 +42,11 @@ export class Polygon {
     this.segmentsComputed = true;
   }
 
-  distance(position: Vector2): number {
+  distance(px: number, py: number): number {
     if (!this.segmentsComputed) {
       throw new Error("preCompute() must be called before accessing segments.");
     }
+    const position = new Vector2(px, py);
     let intersectEven = true;
     let segment = this.segments[0];
     let distanceSquared = segment.distanceSquared(position);

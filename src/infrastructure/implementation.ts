@@ -25,8 +25,12 @@ export class Translation implements SignedDistanceFunction {
   constructor(private sdf: SignedDistanceFunction, offset: Vector) {
     this.offset = offset.negate();
   }
-  distance(position: Vector): number {
-    return this.sdf.distance(position.add(this.offset));
+  distance(px: number, py: number, pz: number): number {
+    return this.sdf.distance(
+      px + this.offset.x,
+      py + this.offset.y,
+      pz + this.offset.z
+    );
   }
 }
 
@@ -86,13 +90,12 @@ export class SdfVisualizer2d {
     y: number,
     sdf: SignedDistanceFunction2d
   ): RgbColor {
-    const v = new Vector2(
-      this.xOffset + (x - this.halfWidth) / this.pixelsPerUnit,
-      this.yOffset + -(y - this.halfHeight) / this.pixelsPerUnit
-    );
-    const color = this.annotate(v.x, v.y);
+    const pixelX = this.xOffset + (x - this.halfWidth) / this.pixelsPerUnit;
+    const pixelY = this.yOffset + -(y - this.halfHeight) / this.pixelsPerUnit;
+
+    const color = this.annotate(pixelX, pixelY);
     if (color !== null) return color;
-    const dist = sdf.distance(v);
+    const dist = sdf.distance(pixelX, pixelY);``
     const t = this.contours.eval(dist);
     if (dist < 0) {
       return this.green.mix(this.darkGreen, t);

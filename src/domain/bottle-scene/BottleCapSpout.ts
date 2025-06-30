@@ -15,7 +15,8 @@ export class BottleCapSpout implements SignedDistanceFunction {
     this.pill1 = new Pill(p1, p2);
     this.pill2 = new Pill(p2, p3);
   }
-  distance(position: Vector): number {
+  distance(px: number, py: number, pz:  number): number {
+    const position = new Vector(px, py, pz);
     const dist1 = this.pill1.distanceSquared(position);
     const dist2 = this.pill2.distanceSquared(position);
     const dist = Math.sqrt(Math.min(dist1, dist2));

@@ -16,11 +16,11 @@ export interface Camera {
 }
 
 export interface SignedDistanceFunction2d {
-  distance(position: Vector2): number;
+  distance(px: number, py: number): number;
 }
 
 export interface SignedDistanceFunction {
-  distance(position: Vector): number;
+  distance(px: number, py: number, pz: number): number;
 }
 
 export interface SceneBuilder {

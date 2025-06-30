@@ -73,11 +73,11 @@ export class BoundsEstimator {
     let accepted = 0;
     let rejected = 0;
     let current = startingPoint;
-    let currentDist = sdf.distance(startingPoint);
+    let currentDist = sdf.distance(startingPoint.x, startingPoint.y, startingPoint.z);
     let currentProb = this.toProbability(currentDist);
     for (let i = 0; i < 10000; i++) {
       const proposal = this.createProposal(startingPoint);
-      const proposedDist = sdf.distance(proposal);
+      const proposedDist = sdf.distance(proposal.x, proposal.y, proposal.z);
       const proposedProb = this.toProbability(proposedDist);
       if (this.shouldAccept(proposedProb, currentProb)) {
         startingPoint = proposal;
