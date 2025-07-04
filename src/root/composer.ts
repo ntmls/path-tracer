@@ -28,7 +28,7 @@ export class Composer {
   private rayMarcherFactory: RayMarcherFactory = new DefaultRayMaregerFactory(
     {
       maxDistance: 150.0,
-      maxSteps: 1000,
+      maxSteps: 200,
       surfaceDistance: 0.01,
     },
     this.normalCalculation

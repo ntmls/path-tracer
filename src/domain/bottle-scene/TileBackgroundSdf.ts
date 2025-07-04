@@ -1,4 +1,3 @@
-import { Vector } from "../common/Vector";
 import { SignedDistanceFunction } from "../common/Abstractions";
 
 export class TileBackgroundSdf implements SignedDistanceFunction {
@@ -17,8 +16,16 @@ export class TileBackgroundSdf implements SignedDistanceFunction {
   }
 
   distance(px: number, py: number, pz: number): number {
-    const result = Math.abs(pz - this.z) - this.halfThickness;
+    // const result = Math.abs(pz - this.z) - this.halfThickness;
+
+    const estimate = -pz + 3.75;
+    if (estimate > .1) {
+      return estimate;
+    }
+    const result = -pz + 4.0;
     return (result - this.displace(px + 1.7, py - 0.95)) * 0.75;
+
+    // return (result - this.displace(px + 1.7, py - 0.95)) * 0.75;
   }
   private displace(x: number, y: number): number {
     const indexX = Math.round(x * this._inverseSizeX);

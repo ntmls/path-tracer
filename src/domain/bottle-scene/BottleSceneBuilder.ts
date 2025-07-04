@@ -24,6 +24,8 @@ import { BottleCapProfile } from "./BottleCapProfile";
 import { BottleCapSpout } from "./BottleCapSpout";
 import { TileBackgroundSdf } from "./TileBackgroundSdf";
 import { RoundedBox } from "./RoundedBox";
+import { FastBoxSdf } from "../common/sdf/FasBoxSdf";
+import { FastEstimateSdf } from "../common/sdf/FastEstimateSdf";
 
 export class BottleSceneBuilder implements SceneBuilder {
   constructor(private readonly lightFactory: LightFactory) {}
@@ -90,9 +92,13 @@ export class BottleSceneBuilder implements SceneBuilder {
     scene.addObject("Tile Wall", tileWallSdf, tileMaterial);
 
     // shelf
-    const shelfSdf = new OffsetYSdf(-0.25, new RoundedBox(11, 0.5, 6, 0.25));
+    const rawShelfSdf = new RoundedBox(11, 0.5, 6, 0.25);
+    // const fastShelfSdf = new FastBoxSdf(11, 0.5, 6,); 
+    // const approxShelfSdf = new FastEstimateSdf(fastShelfSdf, rawShelfSdf, 0.01);
+    // const shelfSdf = new OffsetYSdf(-.25, approxShelfSdf);
+    const shelfSdf = new OffsetYSdf(-.25, rawShelfSdf);
     const shelfBounds = new SphereBounds(new Vector(0.017, -0.25, 0), 6.2);
-    scene.addObject("Shelf", shelfSdf, tileMaterial, shelfBounds);
+     scene.addObject("Shelf", shelfSdf, tileMaterial, shelfBounds);
   }
 
   private buildBottle(scene: Scene, offsetX: number) {
